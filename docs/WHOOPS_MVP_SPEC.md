@@ -1363,12 +1363,49 @@ and share at least 1 card before activating Pro.
 
 ---
 
+## 22. PRE-LAUNCH SECURITY CHECKLIST
+
+⚠️ MUST complete ALL items before public Play Store launch.
+
+### Critical — API Key Security
+Current state (development only):
+- AI API keys stored as EXPO_PUBLIC_ variables
+- Keys are embedded in APK and visible to anyone who decompiles it
+- ACCEPTABLE for internal testing only
+
+Required before launch:
+- [ ] Create Supabase Edge Function: /functions/generate-advice
+- [ ] Move DeepSeek API call into Edge Function
+- [ ] Move Anthropic fallback call into Edge Function  
+- [ ] Store DEEPSEEK_API_KEY and ANTHROPIC_API_KEY as true 
+      Supabase secrets (not EXPO_PUBLIC_)
+- [ ] Update services/deepseek.ts and services/anthropic.ts to 
+      call our Edge Function URL instead of AI APIs directly
+- [ ] Remove EXPO_PUBLIC_DEEPSEEK_API_KEY from app entirely
+- [ ] Remove EXPO_PUBLIC_ANTHROPIC_API_KEY from app entirely
+- [ ] Keep EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY 
+      (these are safe — Supabase anon key is designed to be public, 
+      protected by RLS policies)
+
+### Other Pre-Launch Items
+- [ ] Server-side rate limiting via Supabase Edge Function
+      (replace client-side AsyncStorage limit)
+- [ ] Add expo-build-properties plugin for minSdkVersion in Gradle
+- [ ] Privacy Policy page (required for Play Store)
+- [ ] Terms of Service page (required for Play Store)
+- [ ] Play Store listing assets (screenshots, description, icon)
+- [ ] Test on minimum 3 different Android device sizes
+- [ ] Test on Android 8.0 (minSdkVersion 26)
+
+---
+
 ## 20. CHANGELOG
 
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2026-08-21 | Initial spec created from plan.md + design.md |
 | 1.1 | 2026-08-21 | Added monetization, pricing, rate limits |
+| 1.3 | 2026-08-21 | Added pre-launch security checklist (Section 22) |
 
 > 📌 Update this table every time a significant decision is made or spec changes.
 
