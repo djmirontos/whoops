@@ -1333,11 +1333,42 @@ These are explicitly out of scope for v1.0. Do not implement, scaffold, or stub 
 
 ---
 
+## 21. MONETIZATION
+
+### Strategy
+Prove retention before monetizing. Confirm users return 3+ days
+and share at least 1 card before activating Pro.
+
+### Free Tier
+- 5 bad advice requests per day
+- All 3 share card templates
+- History (last 7 days only)
+- Basic stats
+- Resets at midnight local time
+
+### Whoops Pro — $2.99/month or $19.99/year
+- Unlimited requests
+- History forever
+- Exclusive share card templates
+- Early access to new features
+- Subtle Pro badge on share cards
+
+### Rate Limiting (MVP — Client Side)
+- AsyncStorage key: whoops_usage_YYYY-MM-DD
+- Daily limit: 5 requests
+- Reset: midnight local time
+- Limit message: "You've had enough bad advice today.
+  Come back tomorrow for more terrible decisions. 😈"
+- Move to Supabase Edge Function before public launch
+
+---
+
 ## 20. CHANGELOG
 
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2026-08-21 | Initial spec created from plan.md + design.md |
+| 1.1 | 2026-08-21 | Added monetization, pricing, rate limits |
 
 > 📌 Update this table every time a significant decision is made or spec changes.
 
