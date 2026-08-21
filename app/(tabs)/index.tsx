@@ -1,6 +1,7 @@
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useEffect, useState } from 'react'
-import { Pressable, ScrollView, Text, View } from 'react-native'
+import { Image, Pressable, ScrollView, Text, View } from 'react-native'
+import WhoopsLogo from '../../assets/logo.png'
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -82,7 +83,13 @@ export default function HomeScreen() {
     <>
       <SafeArea>
         <View className="flex-1 px-6 pt-4">
-          <Text className="text-xl font-bold text-primary">😈 Whoops</Text>
+          <Image
+            source={WhoopsLogo}
+            style={{ width: 120, height: 48 }}
+            resizeMode="contain"
+            accessibilityRole="image"
+            accessibilityLabel="Whoops"
+          />
 
           <Text className="mt-6 text-2xl font-bold text-text-primary">What's your problem?</Text>
 
