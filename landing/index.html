@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Whoops — Terrible advice. Zero regrets.</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: #ffffff;
+  color: #0D0D10;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* NAV */
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.nav-logo {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0D0D10;
+  text-decoration: none;
+  letter-spacing: -0.5px;
+}
+
+.nav-download {
+  font-size: 14px;
+  font-weight: 600;
+  color: #8B5CF6;
+  text-decoration: none;
+}
+
+.nav-download:hover { text-decoration: underline; }
+
+/* HERO */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 80px 24px 60px;
+}
+
+.hero-counter {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 40px;
+  letter-spacing: 0.2px;
+}
+
+.hero-counter strong { color: #8B5CF6; }
+
+/* PHONE MOCKUP */
+.phone-wrap {
+  position: relative;
+  margin-bottom: 56px;
+}
+
+.phone {
+  width: 220px;
+  height: 440px;
+  background: #0D0D10;
+  border-radius: 36px;
+  border: 6px solid #1a1a1a;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.18), 0 8px 20px rgba(0,0,0,0.1);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 16px;
+}
+
+/* notch */
+.phone::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 6px;
+  background: #333;
+  border-radius: 3px;
+}
+
+.phone-logo {
+  font-size: 13px;
+  font-weight: 800;
+  color: #8B5CF6;
+  letter-spacing: -0.3px;
+  margin-bottom: 24px;
+  margin-top: 12px;
+}
+
+.phone-prompt {
+  font-size: 10px;
+  color: #A1A1AA;
+  margin-bottom: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.phone-input {
+  background: #1A1A24;
+  border-radius: 10px;
+  padding: 10px 12px;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.phone-input-text {
+  font-size: 11px;
+  color: #A1A1AA;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.phone-advice-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: #F43F8E;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  align-self: flex-start;
+}
+
+.phone-advice-text {
+  align-self: flex-start;
+  margin-bottom: 4px;
+}
+
+.phone-advice-big {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.phone-advice-body {
+  font-size: 10px;
+  color: #A1A1AA;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  align-self: flex-start;
+}
+
+.phone-btn {
+  width: 100%;
+  background: #8B5CF6;
+  border-radius: 10px;
+  padding: 9px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.3px;
+}
+
+.hero h1 {
+  font-size: clamp(36px, 6vw, 60px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -2px;
+  color: #0D0D10;
+  max-width: 600px;
+  margin-bottom: 16px;
+}
+
+.hero h1 em {
+  font-style: normal;
+  color: #8B5CF6;
+}
+
+.hero p {
+  font-size: 17px;
+  color: #555;
+  max-width: 400px;
+  margin-bottom: 36px;
+  line-height: 1.65;
+}
+
+/* GOOGLE PLAY BADGE */
+.play-badge {
+  display: inline-block;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+.play-badge:hover { transform: scale(0.97); opacity: 0.9; }
+
+.play-badge-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #0D0D10;
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1.5px solid #222;
+  text-decoration: none;
+}
+
+.play-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.play-text-block { text-align: left; line-height: 1.2; }
+
+.play-small {
+  font-size: 10px;
+  font-weight: 400;
+  color: #ccc;
+  letter-spacing: 0.3px;
+}
+
+.play-big {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+}
+
+/* DIVIDER */
+.section-divider {
+  width: 100%;
+  height: 1px;
+  background: #f0f0f0;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* FEATURE SECTIONS*/
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+  padding: 80px 60px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.feature.reverse { flex-direction: row-reverse; }
+
+.feature-visual {
+  flex: 0 0 240px;
+  height: 320px;
+  background: #0D0D10;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+  gap: 12px;
+}
+
+.feature-text { flex: 1; }
+
+.feature-text h2 {
+  font-size: clamp(26px, 3.5vw, 38px);
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1.15;
+  color: #0D0D10;
+  margin-bottom: 12px;
+}
+
+.feature-text p {
+  font-size: 16px;
+  color: #555;
+  line-height: 1.7;
+  max-width: 340px;
+}
+
+/* VISUAL 1 — Bad advice card */
+.v1-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: #F43F8E;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  align-self: flex-start;
+}
+
+.v1-big {
+  font-size: 36px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -1px;
+  line-height: 1;
+  align-self: flex-start;
+}
+
+.v1-body {
+  font-size: 12px;
+  color: #A1A1AA;
+  line-height: 1.55;
+  align-self: flex-start;
+}
+
+.v1-btn {
+  width: 100%;
+  background: #8B5CF6;
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  margin-top: 4px;
+}
+
+/* VISUAL 2 — Challenge card */
+.v2-header {
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  text-align: center;
+}
+
+.v2-sub {
+  font-size: 11px;
+  color: #A1A1AA;
+  text-align: center;
+}
+
+.v2-mission {
+  background: #1A1A24;
+  border-radius: 12px;
+  padding: 16px;
+  width: 100%;
+  text-align: center;
+}
+
+.v2-mission-label {
+  font-size: 9px;
+  color: #A1A1AA;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.v2-mission-text {
+  font-size: 16px;
+  font-weight: 800;
+  color: #FACC15;
+  letter-spacing: -0.3px;
+}
+
+.v2-btn {
+  width: 100%;
+  background: #A3E635;
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #0D0D10;
+}
+
+/* VISUAL 3 — Share card */
+.v3-card {
+  width: 100%;
+  background: #1A1A24;
+  border-radius: 14px;
+  padding: 16px;
+  border: 1px solid #2D2D3D;
+}
+
+.v3-asked {
+  font-size: 9px;
+  color: #A1A1AA;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.v3-q {
+  font-size: 11px;
+  color: #fff;
+  font-style: italic;
+  margin-bottom: 10px;
+}
+
+.v3-divider {
+  height: 1px;
+  background: #2D2D3D;
+  margin-bottom: 10px;
+}
+
+.v3-advice {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+
+.v3-body-small {
+  font-size: 10px;
+  color: #A1A1AA;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.v3-brand {
+  font-size: 9px;
+  color: #8B5CF6;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.v3-share-btn {
+  margin-top: 8px;
+  background: transparent;
+  border: 1px solid #2D2D3D;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 9px;
+  color: #A1A1AA;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  width: 100%;
+  text-align: center;
+}
+
+/* PRIVACY SECTION */
+.privacy-section {
+  text-align: center;
+  padding: 60px 24px;
+  background: #fafafa;
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.privacy-section p {
+  font-size: 15px;
+  color: #555;
+  max-width: 420px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.privacy-section strong { color: #0D0D10; }
+
+/* FOOTER */
+footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 40px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-brand {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0D0D10;
+  letter-spacing: -0.3px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 24px;
+}
+
+.footer-links a {
+  font-size: 13px;
+  color: #888;
+  text-decoration: none;
+}
+
+.footer-links a:hover { color: #0D0D10; }
+
+.footer-copy {
+  font-size: 12px;
+  color: #aaa;
+}
+
+@media (max-width: 640px) {
+  nav { padding: 16px 20px; }
+  .feature { flex-direction: column !important; padding: 48px 24px; gap: 32px; }
+  .feature-visual { width: 100%; flex: none; height: 280px; }
+  footer { flex-direction: column; text-align: center; padding: 24px; }
+  .footer-links { justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <img src="../assets/logo.png" alt="Whoops"
+         style="height: 48px; width: auto; display: block;" />
+  </a>
+  <a href="#download" class="nav-download">Download the app</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>The app that tells you<br><em>not to do it.</em></h1>
+    <!-- Phone mockup -->
+  <div class="phone-wrap">
+    <div class="phone">
+      <img src="../assets/logo.png" alt="Whoops"
+           style="height: 20px; width: auto; margin-bottom: 24px;
+                  margin-top: 12px; opacity: 0.9;" />
+      <div class="phone-prompt">What's your problem?</div>
+      <div class="phone-input">
+        <div class="phone-input-text">"I don't want to clean my room..."</div>
+      </div>
+      <div class="phone-advice-label">😈 Bad Advice</div>
+      <div class="phone-advice-text">
+        <div class="phone-advice-big">DON'T.</div>
+      </div>
+      <div class="phone-advice-body">Let the laundry become furniture. Whatever you do, don't pick up those three shirts. 😈</div>
+      <div class="phone-btn">😈 FINE. I'LL DO IT</div>
+    </div>
+  </div>
+  <p>Terrible advice that somehow gets you off the couch. Free to try.</p>
+  <!-- Google Play Badge -->
+  <a href="#" class="play-badge" id="download">
+    <div class="play-badge-inner">
+      <svg class="play-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3.18 23.76c.38.21.8.24 1.19.1l13.2-7.62-2.82-2.82-11.57 10.34z" fill="#EA4335"/>
+        <path d="M22.33 10.37L19.5 8.76l-3.13 3.13 3.13 3.13 2.86-1.65c.82-.47.82-1.53-.03-2z" fill="#FBBC04"/>
+        <path d="M4.37.14C4 .0 3.56.03 3.18.27L14.75 11.88l2.82-2.82L4.37.14z" fill="#4285F4"/>
+        <path d="M3.18.27C2.46.7 2 1.5 2 2.42v19.16c0 .92.46 1.72 1.18 2.18L14.75 12 3.18.27z" fill="#34A853"/>
+      </svg>
+      <div class="play-text-block">
+        <div class="play-small">GET IT ON</div>
+        <div class="play-big">Google Play</div>
+      </div>
+    </div>
+  </a>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- SECTION 1 -->
+<div class="feature">
+  <div class="feature-visual">
+    <div class="v1-label">😈 Bad Advice</div>
+    <div class="v1-big">DON'T.</div>
+    <div class="v1-body">Your laundry has achieved sentience. It has dreams now.<br><br>Whatever you do, don't pick up those three shirts.</div>
+    <div class="v1-btn">😈 FINE. I'LL DO IT</div>
+  </div>
+  <div class="feature-text">
+    <h2>Sarcastic,<br>never mean.</h2>
+    <p>Whoops has opinions about your procrastination. Very bad opinions. Delivered with love.</p>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- SECTION 2 -->
+<div class="feature reverse">
+  <div class="feature-visual">
+    <div class="v2-header">Fine. You win.</div>
+    <div class="v2-sub">Your extremely annoying mission:</div>
+    <div class="v2-mission">
+      <div class="v2-mission-label">CHALLENGE</div>
+      <div class="v2-mission-text">Pick up 3 shirts</div>
+    </div>
+    <div class="v2-btn">I DID IT ✅</div>
+    <div style="font-size:10px; color:#52525B; text-align:center;">I give up 😐</div>
+  </div>
+  <div class="feature-text">
+    <h2>Tiny missions.<br>Real results.</h2>
+    <p>Whoops won't ask you to clean the whole room. Just pick up three things. That's it. You'll do the rest yourself.</p>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- SECTION 3 -->
+<div class="feature">
+  <div class="feature-visual">
+    <div class="v3-card">
+      <div class="v3-asked">You asked</div>
+      <div class="v3-q">"I don't want to clean my room."</div>
+      <div class="v3-divider"></div>
+      <div class="v3-advice">DON'T.</div>
+      <div class="v3-body-small">Let the laundry become furniture. Whatever you do, don't pick up those three shirts. 😈</div>
+      <div class="v3-brand">😈 WHOOPS · whoops.app</div>
+      <div class="v3-share-btn">📤 Share this whoops</div>
+    </div>
+  </div>
+  <div class="feature-text">
+    <h2>Share the<br>terrible advice.</h2>
+    <p>Every bad answer becomes a card your friends won't understand. Share it anyway.</p>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- PRIVACY -->
+<div class="privacy-section">
+  <p><strong>No ads. No data games.</strong><br>Your problems stay on your phone. We just make fun of them.</p>
+</div>
+
+<!-- FOOTER CTA -->
+<section class="hero" style="padding: 80px 24px;">
+  <h1 style="font-size: clamp(32px,5vw,52px);">Ready for the worst<br>advice of your life?</h1>
+  <p>Free. Terrible. Surprisingly effective.</p>
+  <a href="#" class="play-badge">
+    <div class="play-badge-inner">
+      <svg class="play-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3.18 23.76c.38.21.8.24 1.19.1l13.2-7.62-2.82-2.82-11.57 10.34z" fill="#EA4335"/>
+        <path d="M22.33 10.37L19.5 8.76l-3.13 3.13 3.13 3.13 2.86-1.65c.82-.47.82-1.53-.03-2z" fill="#FBBC04"/>
+        <path d="M4.37.14C4 .0 3.56.03 3.18.27L14.75 11.88l2.82-2.82L4.37.14z" fill="#4285F4"/>
+        <path d="M3.18.27C2.46.7 2 1.5 2 2.42v19.16c0 .92.46 1.72 1.18 2.18L14.75 12 3.18.27z" fill="#34A853"/>
+      </svg>
+      <div class="play-text-block">
+        <div class="play-small">GET IT ON</div>
+        <div class="play-big">Google Play</div>
+      </div>
+    </div>
+  </a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">
+    <img src="../assets/logo.png" alt="Whoops"
+         style="height: 28px; width: auto;" />
+  </div>
+  <div class="footer-links">
+    <a href="#">Support</a>
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+  </div>
+  <div class="footer-copy">© 2026 Whoops. Terrible advice. Zero regrets.</div>
+</footer>
+
+</body>
+</html>
