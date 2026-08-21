@@ -32,8 +32,28 @@ export const useSessionStore = create<SessionState>((set) => ({
   setCurrentProblem: (text) => set({ currentProblem: text }),
 
   generateAdvice: async () => {
-    // TODO: wire up services/safety.ts + services/deepseek.ts per spec Section 6/7
-    throw new Error('generateAdvice not implemented')
+    set({ isLoading: true, error: null })
+
+    // TODO: replace this mock with services/safety.ts + services/deepseek.ts per spec Section 6/7
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+
+    const mockResponse: WhoopsResponse = {
+      safe: true,
+      response:
+        "DON'T.\n\nYour laundry has achieved sentience. It has dreams now.\n\nWhatever you do, don't pick up those three shirts. That would be rude. 😈",
+      tone: 'absurd',
+      category: 'chores',
+      challenge: {
+        enabled: true,
+        instruction: 'Pick up 3 things off the floor',
+        estimatedSeconds: 30,
+        emoji: '👕',
+      },
+      emoji: '😈',
+      shareable: true,
+    }
+
+    set({ currentResponse: mockResponse, isLoading: false })
   },
 
   completeChallenge: () => {

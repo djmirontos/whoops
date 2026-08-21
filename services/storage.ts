@@ -49,6 +49,15 @@ export async function incrementTotalDone(): Promise<number> {
   return next
 }
 
+// Local-time YYYY-MM-DD key, so the daily limit resets at local midnight (not UTC).
+export function getTodayDateKey(): string {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 export async function getUsageCount(dateKey: string): Promise<number> {
   const raw = await AsyncStorage.getItem(`whoops_usage_${dateKey}`)
   return raw ? Number(raw) : 0

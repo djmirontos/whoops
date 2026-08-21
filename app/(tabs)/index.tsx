@@ -1,60 +1,184 @@
-import { router } from 'expo-router'
-import { useState } from 'react'
-import { ScrollView, Text, View } from 'react-native'
+import { router, useFocusEffect } from 'expo-router'
+import { useCallback, useEffect, useState } from 'react'
+import { Pressable, ScrollView, Text, View } from 'react-native'
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated'
+import { SafeArea } from '../../components/layout/SafeArea'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
-import { SafeArea } from '../../components/layout/SafeArea'
 import { CATEGORIES } from '../../constants/categories'
+import { LOADING_MESSAGES } from '../../constants/loadingMessages'
+import { useAdvice } from '../../hooks/useAdvice'
+import { useHaptics } from '../../hooks/useHaptics'
+import { getTodayDateKey, getUsageCount, incrementUsageCount } from '../../services/storage'
 
-const EXAMPLE_CHIPS = CATEGORIES.flatMap((category) => category.examples).slice(0, 4)
+const CHAR_LIMIT = 500
+const MIN_CHARS = 3
+const DAILY_LIMIT = 5
+const MESSAGE_ROTATE_MS = 700
+const ALL_EXAMPLES = CATEGORIES.flatMap((category) => category.examples)
+
+function pickRandomExamples(count: number): string[] {
+  const shuffled = [...ALL_EXAMPLES].sort(() => Math.random() - 0.5)
+  return shuffled.slice(0, count)
+}
 
 export default function HomeScreen() {
   const [problem, setProblem] = useState('')
+  const [exampleChips, setExampleChips] = useState<string[]>(() => pickRandomExamples(6))
+  const [showLoading, setShowLoading] = useState(false)
+  const [showLimitModal, setShowLimitModal] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const canSubmit = problem.trim().length >= 3
+  const { setCurrentProblem, generateAdvice } = useAdvice()
+  const { impactMedium } = useHaptics()
 
-  function handleSubmit() {
+  // Reshuffle the example chips every time this screen gains focus, not just on first mount.
+  useFocusEffect(
+    useCallback(() => {
+      setExampleChips(pickRandomExamples(6))
+    }, [])
+  )
+
+  useEffect(() => {
+    if (!errorMessage) return
+    const timeout = setTimeout(() => setErrorMessage(null), 3000)
+    return () => clearTimeout(timeout)
+  }, [errorMessage])
+
+  const canSubmit = problem.trim().length >= MIN_CHARS
+  const isAtCharLimit = problem.length >= CHAR_LIMIT
+
+  async function handleSubmit() {
     if (!canSubmit) return
-    // TODO: wire up useAdvice()/sessionStore.generateAdvice() before navigating
-    router.push('/advice')
+
+    const dateKey = getTodayDateKey()
+    const usageCount = await getUsageCount(dateKey)
+    if (usageCount >= DAILY_LIMIT) {
+      setShowLimitModal(true)
+      return
+    }
+
+    await impactMedium()
+    setShowLoading(true)
+    setCurrentProblem(problem)
+
+    try {
+      await generateAdvice()
+      await incrementUsageCount(dateKey)
+      setShowLoading(false)
+      router.push('/advice')
+    } catch {
+      setShowLoading(false)
+      setErrorMessage('Something went wrong. Try again. 😈')
+    }
   }
 
   return (
-    <SafeArea>
-      <View className="flex-1 px-6 pt-4">
-        <Text className="text-lg text-primary">🙃 Whoops</Text>
+    <>
+      <SafeArea>
+        <View className="flex-1 px-6 pt-4">
+          <Text className="text-xl font-bold text-primary">😈 Whoops</Text>
 
-        <Text className="mt-6 text-2xl font-bold text-text-primary">What's your problem?</Text>
+          <Text className="mt-6 text-2xl font-bold text-text-primary">What's your problem?</Text>
 
-        <Input
-          className="mt-4"
-          placeholder="I don't want to clean my room..."
-          value={problem}
-          onChangeText={(text) => setProblem(text.slice(0, 500))}
-        />
-        <Text className="mt-1 self-end text-xs text-text-muted">{problem.length}/500</Text>
+          <View className="relative mt-4">
+            <Input
+              className="min-h-[140px] pb-8"
+              placeholder="I don't want to clean my room..."
+              value={problem}
+              onChangeText={(text) => setProblem(text.slice(0, CHAR_LIMIT))}
+              textAlignVertical="top"
+            />
+            <Text
+              className={`absolute bottom-3 right-4 text-xs ${
+                isAtCharLimit ? 'text-danger' : 'text-text-muted'
+              }`}
+            >
+              {problem.length} / {CHAR_LIMIT}
+            </Text>
+          </View>
 
-        <Button
-          label="🙃 GIVE ME BAD ADVICE"
-          onPress={handleSubmit}
-          disabled={!canSubmit}
-          className={`mt-4 ${canSubmit ? '' : 'opacity-50'}`}
-        />
+          <Button
+            label="😈 GIVE ME BAD ADVICE"
+            onPress={handleSubmit}
+            disabled={!canSubmit}
+            className="mt-4"
+          />
 
-        <Text className="mt-8 text-text-secondary">Try:</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-2">
-          {EXAMPLE_CHIPS.map((example) => (
-            <View key={example} className="mr-2 rounded-full bg-surface-raised px-4 py-2">
-              <Text
-                className="text-text-secondary"
-                onPress={() => setProblem(example)}
+          <Text className="mt-8 text-text-secondary">Try:</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-2">
+            {exampleChips.map((example) => (
+              <Pressable
+                key={example}
+                onPress={() => setProblem(example.slice(0, CHAR_LIMIT))}
+                className="mr-2 rounded-full border border-border px-4 py-2"
               >
-                {example}
-              </Text>
+                <Text className="text-text-secondary">{example}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+
+          {errorMessage ? (
+            <View className="absolute bottom-6 left-6 right-6 rounded-2xl bg-danger px-4 py-3">
+              <Text className="text-center font-semibold text-text-primary">{errorMessage}</Text>
             </View>
-          ))}
-        </ScrollView>
+          ) : null}
+        </View>
+      </SafeArea>
+
+      {showLoading ? <LoadingOverlay /> : null}
+      {showLimitModal ? <LimitReachedModal onDismiss={() => setShowLimitModal(false)} /> : null}
+    </>
+  )
+}
+
+function LoadingOverlay() {
+  const [messageIndex, setMessageIndex] = useState(0)
+  const opacity = useSharedValue(1)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      opacity.value = withTiming(0, { duration: 200 }, (finished) => {
+        if (finished) {
+          runOnJS(setMessageIndex)((prev) => (prev + 1) % LOADING_MESSAGES.length)
+          opacity.value = withTiming(1, { duration: 200 })
+        }
+      })
+    }, MESSAGE_ROTATE_MS)
+    return () => clearInterval(interval)
+  }, [opacity])
+
+  const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }))
+
+  return (
+    <View className="absolute inset-0 items-center justify-center bg-background">
+      <Text className="text-6xl">😈</Text>
+      <Text className="mt-4 text-lg font-bold text-primary">WHOOPS IS THINKING...</Text>
+      <View className="mt-2">
+        <Animated.View style={animatedStyle}>
+          <Text className="text-text-secondary">{LOADING_MESSAGES[messageIndex]}</Text>
+        </Animated.View>
       </View>
-    </SafeArea>
+    </View>
+  )
+}
+
+function LimitReachedModal({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <View className="absolute inset-0 items-center justify-center bg-background px-8">
+      <Text className="text-5xl">😈</Text>
+      <Text className="mt-6 text-center text-2xl font-bold text-text-primary">
+        You've had enough bad advice today.
+      </Text>
+      <Text className="mt-2 text-center text-text-secondary">
+        Come back tomorrow for more terrible decisions.
+      </Text>
+      <Button label="I'M DONE FOR TODAY 😈" onPress={onDismiss} className="mt-8 w-full" />
+    </View>
   )
 }

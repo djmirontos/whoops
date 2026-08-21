@@ -31,12 +31,18 @@ export default function RootLayout() {
           against our near-black #0D0D10 background. */}
       <StatusBar style="light" backgroundColor="#0D0D10" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#0D0D10' } }}>
-        <Stack.Screen name="onboarding" />
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="advice" />
-        <Stack.Screen name="challenge" options={{ gestureEnabled: false }} />
-        <Stack.Screen name="completion" />
-        <Stack.Screen name="share-preview" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+        <Stack.Screen name="advice" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="challenge"
+          options={{ headerShown: false, gestureEnabled: false }}
+        />
+        <Stack.Screen name="completion" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="share-preview"
+          options={{ headerShown: false, presentation: 'modal' }}
+        />
       </Stack>
     </SafeAreaProvider>
   )
