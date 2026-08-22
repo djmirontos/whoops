@@ -88,7 +88,7 @@ export async function generateAdvice(userProblem: string): Promise<WhoopsRespons
     // call expression itself, not on the individual properties below.
     const completion = await client.chat.completions.create({
       model: 'deepseek-v4-flash',
-      max_tokens: 800,
+      max_tokens: 2000,
       temperature: 0.9,
       stream: false,
       messages: [

@@ -8,6 +8,8 @@ const BLOCKED_TOPICS = [
   'illegal', 'crime', 'steal', 'fraud',
   'financial advice', 'invest my money', 'stock',
   'legal advice', 'sue', 'lawsuit',
+  'sex', 'sexual', 'intercourse', 'intimate', 'hookup',
+  'make love', 'sleep with',
 ]
 
 // Semantic patterns — not just keywords

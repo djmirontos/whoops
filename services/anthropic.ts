@@ -29,7 +29,28 @@ export async function generateAdviceFallback(userProblem: string): Promise<Whoop
     const raw = block.type === 'text' ? block.text : ''
     console.log('[Anthropic] Raw response:', raw)
 
-    if (!raw) throw new Error('Empty response from Claude')
+    // Claude sometimes declines internally and returns an empty string
+    // rather than an error — treat that as "no advice available" instead
+    // of a hard failure, so the user still gets a Whoops response.
+    if (!raw || raw.trim().length === 0) {
+      console.log('[Anthropic] Empty response - returning default')
+      return {
+        safe: true,
+        response:
+          "BOLD CHOICE.\n\nNot doing things is actually a very advanced life strategy. Whatever you do, don't just start with one tiny step. That would ruin everything.",
+        tone: 'sarcastic',
+        category: 'decisions',
+        challenge: {
+          enabled: false,
+          instruction: '',
+          estimatedSeconds: 0,
+          emoji: '😈',
+        },
+        emoji: '😈',
+        shareable: true,
+      }
+    }
+
     const cleaned = extractJsonPayload(raw)
     return JSON.parse(cleaned) as WhoopsResponse
   } catch (error: any) {
