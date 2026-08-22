@@ -60,7 +60,8 @@ export function getTodayDateKey(): string {
 
 export async function getUsageCount(dateKey: string): Promise<number> {
   const raw = await AsyncStorage.getItem(`whoops_usage_${dateKey}`)
-  return raw ? Number(raw) : 0
+  const parsed = parseInt(raw ?? '0', 10)
+  return Number.isNaN(parsed) ? 0 : parsed
 }
 
 export async function incrementUsageCount(dateKey: string): Promise<number> {

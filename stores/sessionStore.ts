@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { generateAdviceFallback } from '../services/anthropic'
 import { generateAdvice as generateDeepSeekAdvice } from '../services/deepseek'
 import { buildSafetyRefusal, classifyInput } from '../services/safety'
-import { getTodayUsageCount, incrementTodayUsage } from '../services/storage'
+import { getTodayDateKey, getTodayUsageCount, incrementTodayUsage } from '../services/storage'
 import type { WhoopsResponse } from '../types'
 
 const DAILY_LIMIT = 5
@@ -43,6 +43,9 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     set({ isLoading: true, error: null, rateLimited: false })
 
     const usageCount = await getTodayUsageCount()
+    // TODO(debug): remove these once the rate-limit issue is confirmed fixed on-device
+    console.log('Rate limit check - count:', usageCount, typeof usageCount)
+    console.log('Date key:', getTodayDateKey())
     if (usageCount >= DAILY_LIMIT) {
       set({ isLoading: false, rateLimited: true })
       return
