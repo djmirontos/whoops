@@ -75,7 +75,11 @@ export default function SharePreviewScreen() {
                   style={[styles.tab, selectedStyle === label && styles.tabActive]}
                   onPress={() => setSelectedStyle(label)}
                 >
-                  <Text style={styles.tabText}>{label}</Text>
+                  <Text
+                    style={[styles.tabText, selectedStyle === label && styles.tabTextActive]}
+                  >
+                    {label}
+                  </Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -89,46 +93,60 @@ export default function SharePreviewScreen() {
                     resizeMode="contain"
                   />
 
-                  <Text style={styles.classicLabel}>YOU ASKED:</Text>
+                  <Text style={styles.classicMeLabel}>Me:</Text>
                   <Text style={styles.classicQuestion}>"{currentProblem}"</Text>
 
                   <View style={styles.classicDivider} />
 
-                  <Text style={[styles.classicLabel, styles.classicLabelPink]}>WE SAID:</Text>
+                  <Text style={styles.classicWhoopsLabel}>Whoops:</Text>
                   <Text style={styles.classicHeadline}>{headline}</Text>
                   <Text style={styles.classicBody}>{truncate(body, 120)}</Text>
 
-                  <View style={styles.classicBrandRow}>
-                    <Text style={styles.classicBrandEmoji}>😈</Text>
-                    <Text style={styles.classicBrandText}>Whoops · whoops.app</Text>
+                  <View style={styles.classicBottomRow}>
+                    <Text style={styles.classicBrandText}>😈 whoops.app</Text>
+                    <Image
+                      source={require('../assets/mascott.png')}
+                      style={styles.classicMascot}
+                      resizeMode="contain"
+                    />
                   </View>
                 </View>
               )}
 
               {selectedStyle === 'Chaos' && (
                 <View style={styles.chaosCard}>
-                  <Text style={styles.chaosTitle}>I ASKED WHOOPS</Text>
+                  <Text style={styles.chaosTitle}>I ASKED BAD ADVICE</Text>
+
+                  <View style={styles.chaosDivider} />
 
                   <Text style={styles.chaosMeLabel}>Me:</Text>
                   <Text style={styles.chaosQuestion}>"{currentProblem}"</Text>
 
                   <Text style={styles.chaosWhoopsLabel}>Whoops:</Text>
                   <Text style={styles.chaosHeadline}>{headline}</Text>
-                  <Text style={styles.chaosBody}>{truncate(body, 100)} 💀</Text>
+                  <Text style={styles.chaosBody}>{truncate(body, 100)}</Text>
 
+                  <Image
+                    source={require('../assets/mascott.png')}
+                    style={styles.chaosMascot}
+                    resizeMode="contain"
+                  />
                   <Text style={styles.chaosBrand}>😈 whoops.app</Text>
                 </View>
               )}
 
               {selectedStyle === 'Wisdom' && (
                 <View style={styles.wisdomCard}>
-                  <Text style={styles.wisdomQuoteMark}>“</Text>
-                  <Text style={styles.wisdomHeadline}>{headline}</Text>
+                  <Text style={styles.wisdomLabel}>WHOOPS WISDOM</Text>
                   <View style={styles.wisdomDivider} />
-                  <Text style={styles.wisdomSignoff}>— Whoops 😈</Text>
-                  <Text style={styles.wisdomTagline}>
-                    Terrible advice. Surprisingly good results.
+
+                  <Text style={styles.wisdomHeadline}>{headline}</Text>
+                  <Text style={styles.wisdomBody} numberOfLines={1}>
+                    {body}
                   </Text>
+
+                  <Text style={styles.wisdomSignoff}>— Whoops 😈</Text>
+                  <View style={[styles.wisdomDivider, styles.wisdomDividerBottom]} />
                   <Text style={styles.wisdomUrl}>whoops.app</Text>
                 </View>
               )}
@@ -204,9 +222,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
   },
   tabText: {
-    color: Colors.textPrimary,
+    color: Colors.lavender,
     fontSize: 13,
     fontWeight: '600',
+  },
+  tabTextActive: {
+    color: Colors.textPrimary,
   },
   cardWrap: {
     margin: 24,
@@ -214,158 +235,182 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
 
-  // Classic
+  // Classic — warm cream card
   classicCard: {
-    backgroundColor: Colors.background,
-    padding: 28,
-    borderWidth: 1,
-    borderColor: Colors.surface,
+    backgroundColor: '#F5F0E8',
     borderRadius: 20,
+    padding: 24,
   },
   classicLogo: {
-    width: 100,
-    height: 40,
+    width: 110,
+    height: 44,
     marginBottom: 16,
   },
-  classicLabel: {
-    color: Colors.lavender,
+  classicMeLabel: {
+    color: '#8B7355',
     fontSize: 11,
-    letterSpacing: 1.5,
     fontWeight: '700',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
     marginBottom: 4,
   },
-  classicLabelPink: {
-    color: Colors.secondary,
-    marginBottom: 8,
-  },
   classicQuestion: {
-    fontStyle: 'italic',
-    color: Colors.textPrimary,
+    color: '#2D1B0E',
     fontSize: 14,
-    marginBottom: 16,
+    fontStyle: 'italic',
+    marginBottom: 14,
   },
   classicDivider: {
     height: 1,
-    backgroundColor: Colors.surface,
-    marginBottom: 16,
+    backgroundColor: '#D4C9B0',
+  },
+  classicWhoopsLabel: {
+    color: Colors.primary,
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginTop: 14,
+    marginBottom: 6,
   },
   classicHeadline: {
-    color: Colors.textPrimary,
-    fontSize: 24,
+    color: '#1A0A0E',
+    fontSize: 18,
     fontWeight: '800',
-    letterSpacing: -0.5,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   classicBody: {
-    color: Colors.lavender,
+    color: '#4A3728',
     fontSize: 13,
-    lineHeight: 20,
-    marginBottom: 20,
+    lineHeight: 19,
   },
-  classicBrandRow: {
+  classicBottomRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-  },
-  classicBrandEmoji: {
-    fontSize: 16,
+    justifyContent: 'space-between',
+    marginTop: 16,
   },
   classicBrandText: {
     color: Colors.primary,
     fontSize: 11,
-    fontWeight: '700',
+  },
+  classicMascot: {
+    width: 56,
+    height: 56,
   },
 
-  // Chaos
+  // Chaos — pure black card
   chaosCard: {
-    backgroundColor: '#0D0020',
-    padding: 28,
+    backgroundColor: '#000000',
     borderRadius: 20,
+    padding: 24,
   },
   chaosTitle: {
     color: Colors.textPrimary,
-    fontSize: 28,
-    fontWeight: '800',
-    letterSpacing: -1,
-    marginBottom: 16,
+    fontSize: 22,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+    marginBottom: 20,
+  },
+  chaosDivider: {
+    height: 1,
+    backgroundColor: '#222222',
   },
   chaosMeLabel: {
-    color: Colors.lavender,
-    fontSize: 13,
+    color: '#888888',
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 16,
     marginBottom: 4,
   },
   chaosQuestion: {
-    fontStyle: 'italic',
     color: Colors.textPrimary,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     marginBottom: 16,
   },
   chaosWhoopsLabel: {
     color: Colors.secondary,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   chaosHeadline: {
     color: Colors.textPrimary,
-    fontSize: 22,
+    fontSize: 17,
     fontWeight: '800',
-    letterSpacing: -0.5,
     marginBottom: 4,
   },
   chaosBody: {
-    color: Colors.lavender,
-    fontSize: 14,
+    color: '#CCCCCC',
+    fontSize: 13,
+    lineHeight: 19,
     marginBottom: 20,
   },
+  chaosMascot: {
+    width: 64,
+    height: 64,
+    alignSelf: 'center',
+  },
   chaosBrand: {
-    color: Colors.primary,
-    fontSize: 11,
+    color: '#555555',
+    fontSize: 10,
+    textAlign: 'center',
+    marginTop: 8,
   },
 
-  // Wisdom
+  // Wisdom — dark navy card
   wisdomCard: {
-    backgroundColor: Colors.surface,
-    padding: 36,
+    backgroundColor: '#1A1A2E',
     borderRadius: 20,
+    padding: 32,
     alignItems: 'center',
   },
-  wisdomQuoteMark: {
-    fontSize: 48,
-    color: Colors.secondary,
-    lineHeight: 40,
-    marginBottom: 8,
-  },
-  wisdomHeadline: {
-    fontStyle: 'italic',
-    color: Colors.textPrimary,
-    fontSize: 22,
-    fontWeight: '800',
+  wisdomLabel: {
+    color: Colors.lavender,
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 2,
     textAlign: 'center',
-    letterSpacing: -0.5,
-    marginBottom: 16,
+    marginBottom: 24,
   },
   wisdomDivider: {
     width: 40,
-    height: 2,
-    backgroundColor: Colors.secondary,
-    marginBottom: 16,
+    height: 1,
+    backgroundColor: Colors.lavender,
+    alignSelf: 'center',
+    marginBottom: 24,
+  },
+  wisdomDividerBottom: {
+    marginBottom: 12,
+  },
+  wisdomHeadline: {
+    color: Colors.textPrimary,
+    fontSize: 26,
+    fontWeight: '800',
+    textAlign: 'center',
+    letterSpacing: -0.5,
+    fontStyle: 'italic',
+    lineHeight: 32,
+    marginBottom: 12,
+  },
+  wisdomBody: {
+    color: Colors.lavender,
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 24,
   },
   wisdomSignoff: {
     color: Colors.lavender,
     fontSize: 14,
     fontWeight: '600',
-    marginBottom: 8,
-  },
-  wisdomTagline: {
-    color: Colors.textMuted,
-    fontSize: 11,
     textAlign: 'center',
+    marginBottom: 8,
   },
   wisdomUrl: {
     color: Colors.textMuted,
     fontSize: 10,
+    textAlign: 'center',
   },
 
   bottomButtons: {
