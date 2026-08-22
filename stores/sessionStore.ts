@@ -51,6 +51,9 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       return
     }
 
+    console.log('[Session] Generating advice for:', get().currentProblem)
+    console.log('[Session] Rate limit count:', usageCount)
+
     const problem = get().currentProblem
 
     const classification = classifyInput(problem)

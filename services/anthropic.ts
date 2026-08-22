@@ -9,22 +9,32 @@ const client = new Anthropic({
 })
 
 export async function generateAdviceFallback(userProblem: string): Promise<WhoopsResponse> {
-  const message = await client.messages.create({
-    model: 'claude-sonnet-5',
-    max_tokens: 400,
-    system: SYSTEM_PROMPT,
-    messages: [
-      {
-        role: 'user',
-        content: `User's problem: "${userProblem}"\n\nGenerate a Whoops bad advice response.`,
-      },
-    ],
-  })
+  console.log('[Anthropic] DeepSeek failed, trying Claude fallback...')
+  console.log('[Anthropic] API Key exists:', !!process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY)
 
-  const block = message.content[0]
-  const raw = block.type === 'text' ? block.text : ''
-  if (!raw) throw new Error('Empty response from Claude')
+  try {
+    const message = await client.messages.create({
+      model: 'claude-sonnet-5',
+      max_tokens: 400,
+      system: SYSTEM_PROMPT,
+      messages: [
+        {
+          role: 'user',
+          content: `User's problem: "${userProblem}"\n\nGenerate a Whoops bad advice response.`,
+        },
+      ],
+    })
 
-  const cleaned = raw.replace(/```json|```/g, '').trim()
-  return JSON.parse(cleaned) as WhoopsResponse
+    const block = message.content[0]
+    const raw = block.type === 'text' ? block.text : ''
+    console.log('[Anthropic] Raw response:', raw)
+
+    if (!raw) throw new Error('Empty response from Claude')
+    const cleaned = raw.replace(/```json|```/g, '').trim()
+    return JSON.parse(cleaned) as WhoopsResponse
+  } catch (error: any) {
+    console.error('[Anthropic] ERROR:', error?.message)
+    console.error('[Anthropic] Full error:', JSON.stringify(error, null, 2))
+    throw error
+  }
 }

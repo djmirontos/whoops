@@ -64,21 +64,40 @@ Schema:
 }`
 
 export async function generateAdvice(userProblem: string): Promise<WhoopsResponse> {
-  const completion = await client.chat.completions.create({
-    model: 'deepseek-v4-flash',
-    max_tokens: 400,
-    temperature: 0.9,
-    response_format: { type: 'json_object' },
-    messages: [
-      { role: 'system', content: SYSTEM_PROMPT },
-      {
-        role: 'user',
-        content: `User's problem: "${userProblem}"\n\nGenerate a Whoops bad advice response.`,
-      },
-    ],
-  })
+  console.log('[DeepSeek] Starting API call...')
+  console.log('[DeepSeek] API Key exists:', !!process.env.EXPO_PUBLIC_DEEPSEEK_API_KEY)
+  console.log('[DeepSeek] API Key prefix:', process.env.EXPO_PUBLIC_DEEPSEEK_API_KEY?.substring(0, 8))
+  console.log('[DeepSeek] User problem:', userProblem)
 
-  const raw = completion.choices[0].message.content
-  if (!raw) throw new Error('Empty response from DeepSeek')
-  return JSON.parse(raw) as WhoopsResponse
+  try {
+    const completion = await client.chat.completions.create({
+      model: 'deepseek-v4-flash',
+      max_tokens: 400,
+      temperature: 0.9,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        {
+          role: 'user',
+          content: `User's problem: "${userProblem}"\n\nGenerate a Whoops bad advice response.`,
+        },
+      ],
+    })
+
+    console.log('[DeepSeek] Raw response:', completion.choices[0].message.content)
+
+    const raw = completion.choices[0].message.content
+    if (!raw) throw new Error('Empty response from DeepSeek')
+
+    const parsed = JSON.parse(raw) as WhoopsResponse
+    console.log('[DeepSeek] Parsed response:', JSON.stringify(parsed, null, 2))
+
+    return parsed
+  } catch (error: any) {
+    console.error('[DeepSeek] ERROR:', error?.message)
+    console.error('[DeepSeek] ERROR status:', error?.status)
+    console.error('[DeepSeek] ERROR type:', error?.type)
+    console.error('[DeepSeek] Full error:', JSON.stringify(error, null, 2))
+    throw error
+  }
 }
