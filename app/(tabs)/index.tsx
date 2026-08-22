@@ -1,13 +1,7 @@
 import { router, useFocusEffect } from 'expo-router'
-import { useCallback, useEffect, useState } from 'react'
-import { Image, Pressable, ScrollView, Text, View } from 'react-native'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Animated, Image, Pressable, ScrollView, Text, View } from 'react-native'
 import WhoopsLogo from '../../assets/logo.png'
-import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated'
 import { SafeArea } from '../../components/layout/SafeArea'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
@@ -146,28 +140,33 @@ export default function HomeScreen() {
 
 function LoadingOverlay() {
   const [messageIndex, setMessageIndex] = useState(0)
-  const opacity = useSharedValue(1)
+  const opacity = useRef(new Animated.Value(1)).current
 
   useEffect(() => {
     const interval = setInterval(() => {
-      opacity.value = withTiming(0, { duration: 200 }, (finished) => {
-        if (finished) {
-          runOnJS(setMessageIndex)((prev) => (prev + 1) % LOADING_MESSAGES.length)
-          opacity.value = withTiming(1, { duration: 200 })
-        }
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start(({ finished }) => {
+        if (!finished) return
+        setMessageIndex((prev) => (prev + 1) % LOADING_MESSAGES.length)
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }).start()
       })
     }, MESSAGE_ROTATE_MS)
     return () => clearInterval(interval)
   }, [opacity])
-
-  const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }))
 
   return (
     <View className="absolute inset-0 items-center justify-center bg-background">
       <Text className="text-6xl">😈</Text>
       <Text className="mt-4 text-lg font-bold text-primary">WHOOPS IS THINKING...</Text>
       <View className="mt-2">
-        <Animated.View style={animatedStyle}>
+        <Animated.View style={{ opacity }}>
           <Text className="text-text-secondary">{LOADING_MESSAGES[messageIndex]}</Text>
         </Animated.View>
       </View>

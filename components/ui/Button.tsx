@@ -1,5 +1,11 @@
-import { Pressable, Text, type GestureResponderEvent, type PressableProps } from 'react-native'
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated'
+import { useRef } from 'react'
+import {
+  Animated,
+  Pressable,
+  Text,
+  type GestureResponderEvent,
+  type PressableProps,
+} from 'react-native'
 
 type ButtonVariant = 'primary' | 'secondary' | 'success' | 'text'
 
@@ -32,24 +38,30 @@ export function Button({
   onPressOut,
   ...pressableProps
 }: ButtonProps) {
-  const scale = useSharedValue(1)
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }))
+  const scale = useRef(new Animated.Value(1)).current
 
   function handlePressIn(event: GestureResponderEvent) {
-    scale.value = withTiming(0.97, { duration: 80 })
+    Animated.spring(scale, {
+      toValue: 0.97,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 0,
+    }).start()
     onPressIn?.(event)
   }
 
   function handlePressOut(event: GestureResponderEvent) {
-    scale.value = withTiming(1, { duration: 80 })
+    Animated.spring(scale, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 0,
+    }).start()
     onPressOut?.(event)
   }
 
   return (
-    <Animated.View style={animatedStyle}>
+    <Animated.View style={{ transform: [{ scale }] }}>
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ disabled: !!disabled }}
