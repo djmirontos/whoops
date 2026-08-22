@@ -6,6 +6,7 @@ export function useAdvice() {
   const currentResponse = useSessionStore((state) => state.currentResponse)
   const isLoading = useSessionStore((state) => state.isLoading)
   const error = useSessionStore((state) => state.error)
+  const rateLimited = useSessionStore((state) => state.rateLimited)
   const setCurrentProblem = useSessionStore((state) => state.setCurrentProblem)
   const generateAdvice = useSessionStore((state) => state.generateAdvice)
 
@@ -14,6 +15,7 @@ export function useAdvice() {
     currentResponse,
     isLoading,
     error,
+    rateLimited,
     setCurrentProblem,
     generateAdvice,
   }

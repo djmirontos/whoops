@@ -69,6 +69,14 @@ export async function incrementUsageCount(dateKey: string): Promise<number> {
   return next
 }
 
+export async function getTodayUsageCount(): Promise<number> {
+  return getUsageCount(getTodayDateKey())
+}
+
+export async function incrementTodayUsage(): Promise<number> {
+  return incrementUsageCount(getTodayDateKey())
+}
+
 export async function getShareStyle(): Promise<ShareCardStyle> {
   const raw = await AsyncStorage.getItem(SHARE_STYLE_KEY)
   return raw === 'classic' || raw === 'chaos' || raw === 'wisdom' ? raw : 'classic'

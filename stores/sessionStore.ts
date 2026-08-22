@@ -1,5 +1,11 @@
 import { create } from 'zustand'
+import { generateAdviceFallback } from '../services/anthropic'
+import { generateAdvice as generateDeepSeekAdvice } from '../services/deepseek'
+import { buildSafetyRefusal, classifyInput } from '../services/safety'
+import { getTodayUsageCount, incrementTodayUsage } from '../services/storage'
 import type { WhoopsResponse } from '../types'
+
+const DAILY_LIMIT = 5
 
 // Zustand session state (spec Section 12: State Management)
 interface SessionState {
@@ -8,6 +14,7 @@ interface SessionState {
   currentResponse: WhoopsResponse | null
   isLoading: boolean
   error: string | null
+  rateLimited: boolean
 
   // Stats (loaded from AsyncStorage)
   totalWhoops: number
@@ -20,11 +27,12 @@ interface SessionState {
   resetSession: () => void
 }
 
-export const useSessionStore = create<SessionState>((set) => ({
+export const useSessionStore = create<SessionState>((set, get) => ({
   currentProblem: '',
   currentResponse: null,
   isLoading: false,
   error: null,
+  rateLimited: false,
 
   totalWhoops: 0,
   totalDone: 0,
@@ -32,28 +40,36 @@ export const useSessionStore = create<SessionState>((set) => ({
   setCurrentProblem: (text) => set({ currentProblem: text }),
 
   generateAdvice: async () => {
-    set({ isLoading: true, error: null })
+    set({ isLoading: true, error: null, rateLimited: false })
 
-    // TODO: replace this mock with services/safety.ts + services/deepseek.ts per spec Section 6/7
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-
-    const mockResponse: WhoopsResponse = {
-      safe: true,
-      response:
-        "DON'T.\n\nYour laundry has achieved sentience. It has dreams now.\n\nWhatever you do, don't pick up those three shirts. That would be rude. 😈",
-      tone: 'absurd',
-      category: 'chores',
-      challenge: {
-        enabled: true,
-        instruction: 'Pick up 3 things off the floor',
-        estimatedSeconds: 30,
-        emoji: '👕',
-      },
-      emoji: '😈',
-      shareable: true,
+    const usageCount = await getTodayUsageCount()
+    if (usageCount >= DAILY_LIMIT) {
+      set({ isLoading: false, rateLimited: true })
+      return
     }
 
-    set({ currentResponse: mockResponse, isLoading: false })
+    const problem = get().currentProblem
+
+    const classification = classifyInput(problem)
+    if (!classification.safe) {
+      set({ currentResponse: buildSafetyRefusal(classification.reason), isLoading: false })
+      return
+    }
+
+    try {
+      let response: WhoopsResponse
+      try {
+        response = await generateDeepSeekAdvice(problem)
+      } catch {
+        response = await generateAdviceFallback(problem)
+      }
+
+      await incrementTodayUsage()
+      set({ currentResponse: response, isLoading: false })
+    } catch (err) {
+      set({ isLoading: false, error: 'Something went wrong. Try again. 😈' })
+      throw err
+    }
   },
 
   completeChallenge: () => {
@@ -61,6 +77,12 @@ export const useSessionStore = create<SessionState>((set) => ({
   },
 
   resetSession: () => {
-    set({ currentProblem: '', currentResponse: null, isLoading: false, error: null })
+    set({
+      currentProblem: '',
+      currentResponse: null,
+      isLoading: false,
+      error: null,
+      rateLimited: false,
+    })
   },
 }))

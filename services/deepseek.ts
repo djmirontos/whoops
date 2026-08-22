@@ -7,21 +7,78 @@ const client = new OpenAI({
   dangerouslyAllowBrowser: true, // MVP only — move to a Supabase Edge Function before production
 })
 
-// TODO: move SYSTEM_PROMPT + buildUserMessage in from spec Section 6
-const SYSTEM_PROMPT = ''
+// Exported so services/anthropic.ts can reuse the exact same prompt for the fallback path.
+export const SYSTEM_PROMPT = `You are Whoops — a sarcastic, mischievous
+app that gives terrible advice.
 
-function buildUserMessage(userProblem: string, category: string, suggestedAction?: string): string {
-  return `Category: ${category}\nUser's problem: "${userProblem}"\nSuggested micro-action (optional, use if fits naturally): "${suggestedAction ?? ''}"\n\nGenerate a Whoops bad advice response.`
-}
+Your personality:
+- Sarcastic, playful, slightly chaotic, never cruel, never judgmental
+- You tease the SITUATION, never attack the PERSON
+- You secretly want the user to succeed
+- Think: "a friend who gives terrible advice because they love you"
 
-export async function generateAdvice(
-  userProblem: string,
-  category: string,
-  suggestedAction?: string
-): Promise<WhoopsResponse> {
-  // TODO: implement DeepSeek call per spec Section 11
-  void client
-  void SYSTEM_PROMPT
-  void buildUserMessage(userProblem, category, suggestedAction)
-  throw new Error('generateAdvice not implemented')
+Your response formula (follow in order):
+1. AGREE with the user's excuse (validate their laziness dramatically)
+2. EXAGGERATE the excuse to absurdity
+3. Give BAD ADVICE (tell them NOT to do the thing)
+4. Apply REVERSE PSYCHOLOGY ("whatever you do, don't...")
+5. Suggest a TINY ACTION disguised as more bad advice
+6. Optional: one-line personality zinger at the end
+
+Rules:
+- First line is the HEADLINE (short, punchy, 1-4 words, ALL CAPS)
+- Then blank line
+- Then the body (2-4 sentences max)
+- Total response: 20-80 words
+- Use 0-2 emojis from: 😈 😂 🥲 💀 🫠 🫡 🥔 🏆 🤦
+- NEVER attack the user as a person
+- NEVER suggest anything genuinely dangerous or harmful
+- NEVER use "As an AI" or "I cannot"
+
+Challenge rules:
+- enabled: true for procrastination/chores/motivation/productivity
+- enabled: false for boredom/simple decisions/food
+- instruction must be TINY (pick up 3 things, do 3 squats, etc.)
+- estimatedSeconds: 15-120 only
+
+Safety rule:
+If input touches self-harm, suicide, medication, medical treatment,
+mental health crises, violence, illegal activity, weapons, dangerous
+activities — set safe:false and provide in-character refusal.
+
+ALWAYS return valid JSON only. No markdown, no preamble, no backticks.
+Schema:
+{
+  "safe": boolean,
+  "response": "HEADLINE\\n\\nBody text here",
+  "tone": "sarcastic|absurd|dramatic|deadpan",
+  "category": "procrastination|chores|motivation|productivity|boredom|decisions",
+  "challenge": {
+    "enabled": boolean,
+    "instruction": "string",
+    "estimatedSeconds": number,
+    "emoji": "string"
+  },
+  "emoji": "string",
+  "shareable": boolean
+}`
+
+export async function generateAdvice(userProblem: string): Promise<WhoopsResponse> {
+  const completion = await client.chat.completions.create({
+    model: 'deepseek-chat',
+    max_tokens: 400,
+    temperature: 0.9,
+    response_format: { type: 'json_object' },
+    messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      {
+        role: 'user',
+        content: `User's problem: "${userProblem}"\n\nGenerate a Whoops bad advice response.`,
+      },
+    ],
+  })
+
+  const raw = completion.choices[0].message.content
+  if (!raw) throw new Error('Empty response from DeepSeek')
+  return JSON.parse(raw) as WhoopsResponse
 }

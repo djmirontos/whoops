@@ -22,9 +22,15 @@ export default function AdviceScreen() {
   const currentProblem = useSessionStore((state) => state.currentProblem)
   const currentResponse = useSessionStore((state) => state.currentResponse)
 
+  const isRefusal = currentResponse ? !currentResponse.safe : false
+
   function handleFine() {
     // TODO: save to history (spec Section 5, Screen 2) before navigating
-    if (currentResponse?.challenge.enabled) {
+    if (isRefusal) {
+      // Spec Section 5, Screen 8: a safety refusal never continues into the
+      // challenge/completion celebration flow.
+      router.replace('/')
+    } else if (currentResponse?.challenge.enabled) {
       router.push('/challenge')
     } else {
       router.push('/completion')
@@ -64,7 +70,9 @@ export default function AdviceScreen() {
 
         <View style={styles.footer}>
           <Pressable onPress={handleFine} style={styles.button}>
-            <Text style={styles.buttonText}>FINE. I'LL DO IT 😈</Text>
+            <Text style={styles.buttonText}>
+              {isRefusal ? 'ASK SOMETHING ELSE 😈' : "FINE. I'LL DO IT 😈"}
+            </Text>
           </Pressable>
           <Text style={styles.tryAnother} onPress={() => router.back()}>
             Try another

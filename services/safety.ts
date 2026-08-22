@@ -1,4 +1,4 @@
-import type { SafetyClassification } from '../types'
+import type { SafetyClassification, WhoopsResponse } from '../types'
 
 // Layer 1 — input classification (spec Section 7: Safety Architecture)
 const BLOCKED_TOPICS = [
@@ -19,7 +19,19 @@ const BLOCKED_PATTERNS: RegExp[] = [
 ]
 
 export function classifyInput(text: string): SafetyClassification {
-  // TODO: implement full keyword + pattern classification per spec Section 7
+  for (const pattern of BLOCKED_PATTERNS) {
+    if (pattern.test(text)) {
+      return { safe: false, reason: pattern.source }
+    }
+  }
+
+  const lowerText = text.toLowerCase()
+  for (const topic of BLOCKED_TOPICS) {
+    if (lowerText.includes(topic)) {
+      return { safe: false, reason: topic }
+    }
+  }
+
   return { safe: true }
 }
 
@@ -27,4 +39,25 @@ export function classifyInput(text: string): SafetyClassification {
 export function validateOutput(response: string): SafetyClassification {
   // TODO: implement output validation per spec Section 7
   return { safe: true }
+}
+
+// In-character refusal shown whenever classifyInput() flags the input as
+// unsafe (spec Section 8: example unsafe response).
+export function buildSafetyRefusal(reason?: string): WhoopsResponse {
+  return {
+    safe: false,
+    response:
+      "WHOA. 😳\n\nEven I know when to stop being an idiot.\n\nThat's not something I'm going to mess around with.\n\nFor something this serious, talk to a qualified professional.",
+    tone: 'deadpan',
+    category: 'safety',
+    challenge: {
+      enabled: false,
+      instruction: '',
+      estimatedSeconds: 0,
+      emoji: '',
+    },
+    emoji: '😳',
+    shareable: false,
+    refusalReason: reason ?? 'unsafe',
+  }
 }

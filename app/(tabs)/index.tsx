@@ -15,11 +15,10 @@ import { Colors } from '../../constants/colors'
 import { LOADING_MESSAGES } from '../../constants/loadingMessages'
 import { useAdvice } from '../../hooks/useAdvice'
 import { useHaptics } from '../../hooks/useHaptics'
-import { getTodayDateKey, getUsageCount, incrementUsageCount } from '../../services/storage'
+import { useSessionStore } from '../../stores/sessionStore'
 
 const CHAR_LIMIT = 500
 const MIN_CHARS = 3
-const DAILY_LIMIT = 5
 const MESSAGE_ROTATE_MS = 700
 
 export default function HomeScreen() {
@@ -43,21 +42,19 @@ export default function HomeScreen() {
   async function handleSubmit() {
     if (!canSubmit) return
 
-    const dateKey = getTodayDateKey()
-    const usageCount = await getUsageCount(dateKey)
-    if (usageCount >= DAILY_LIMIT) {
-      setShowLimitModal(true)
-      return
-    }
-
     await impactMedium()
     setShowLoading(true)
     setCurrentProblem(problem)
 
     try {
       await generateAdvice()
-      await incrementUsageCount(dateKey)
       setShowLoading(false)
+
+      if (useSessionStore.getState().rateLimited) {
+        setShowLimitModal(true)
+        return
+      }
+
       router.push('/advice')
     } catch {
       setShowLoading(false)
