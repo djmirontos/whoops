@@ -6,10 +6,7 @@ const BLOCKED_TOPICS = [
   'medication', 'stop taking', 'overdose', 'drugs',
   'violence', 'hurt someone', 'weapon', 'bomb', 'gun',
   'illegal', 'crime', 'steal', 'fraud',
-  'financial advice', 'invest my money', 'stock',
   'legal advice', 'sue', 'lawsuit',
-  'sex', 'sexual', 'intercourse', 'intimate', 'hookup',
-  'make love', 'sleep with',
 ]
 
 // Semantic patterns — not just keywords
@@ -49,7 +46,7 @@ export function buildSafetyRefusal(reason?: string): WhoopsResponse {
   return {
     safe: false,
     response:
-      "WHOA. 😳\n\nEven I know when to stop being an idiot.\n\nThat's not something I'm going to mess around with.\n\nFor something this serious, talk to a qualified professional.",
+      "WHOAH. 😳\n\nEven I know when to stop being an idiot.\n\nThat's not something I'm going to mess around with.\n\nFor something this serious, talk to a qualified professional.",
     tone: 'deadpan',
     category: 'safety',
     challenge: {
