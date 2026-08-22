@@ -65,7 +65,7 @@ Schema:
 
 export async function generateAdvice(userProblem: string): Promise<WhoopsResponse> {
   const completion = await client.chat.completions.create({
-    model: 'deepseek-chat',
+    model: 'deepseek-v4-flash',
     max_tokens: 400,
     temperature: 0.9,
     response_format: { type: 'json_object' },
