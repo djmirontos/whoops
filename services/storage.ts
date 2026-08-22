@@ -77,6 +77,11 @@ export async function incrementTodayUsage(): Promise<number> {
   return incrementUsageCount(getTodayDateKey())
 }
 
+export async function clearTodayUsage(): Promise<void> {
+  const dateKey = getTodayDateKey()
+  await AsyncStorage.removeItem(`whoops_usage_${dateKey}`)
+}
+
 export async function getShareStyle(): Promise<ShareCardStyle> {
   const raw = await AsyncStorage.getItem(SHARE_STYLE_KEY)
   return raw === 'classic' || raw === 'chaos' || raw === 'wisdom' ? raw : 'classic'
