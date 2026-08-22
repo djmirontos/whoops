@@ -1,5 +1,14 @@
 import { Stack, router } from 'expo-router'
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import {
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '../constants/colors'
 import { useSessionStore } from '../stores/sessionStore'
@@ -21,31 +30,44 @@ export default function ChallengeScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} />
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.fine}>Fine.</Text>
-        <Text style={styles.youWin}>You win.</Text>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          style={styles.flex}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={styles.fine}>Fine.</Text>
+          <Text style={styles.youWin}>You win.</Text>
 
-        <Image
-          source={require('../assets/mascott.png')}
-          style={styles.mascot}
-          resizeMode="contain"
-        />
+          <Image
+            source={require('../assets/mascott.png')}
+            style={styles.mascot}
+            resizeMode="contain"
+          />
 
-        {currentResponse ? (
-          <View style={styles.missionBox}>
-            <Text style={styles.missionLabel}>YOUR MISSION:</Text>
-            <Text style={styles.missionText}>{currentResponse.challenge.instruction}</Text>
-            <Text style={styles.missionEmoji}>{currentResponse.challenge.emoji}</Text>
-          </View>
-        ) : null}
+          {currentResponse ? (
+            <>
+              <View style={styles.missionBox}>
+                <Text style={styles.missionLabel}>YOUR MISSION:</Text>
+                <Text style={styles.missionText}>{currentResponse.challenge.instruction}</Text>
+              </View>
+              <Text style={styles.missionEmoji}>{currentResponse.challenge.emoji}</Text>
+            </>
+          ) : null}
+        </ScrollView>
 
-        <Pressable onPress={handleDidIt} style={styles.button}>
-          <Text style={styles.buttonText}>I DID IT ✅</Text>
-        </Pressable>
-        <Text style={styles.giveUp} onPress={handleGiveUp}>
-          I give up 😐
-        </Text>
-      </ScrollView>
+        <View style={styles.stickyBottom}>
+          <Pressable onPress={handleDidIt} style={styles.button}>
+            <Text style={styles.buttonText}>I DID IT ✅</Text>
+          </Pressable>
+          <Text style={styles.giveUp} onPress={handleGiveUp}>
+            I give up 😐
+          </Text>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   )
 }
@@ -55,9 +77,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  flex: {
+    flex: 1,
+  },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 40,
+    paddingBottom: 24,
   },
   fine: {
     fontSize: 42,
@@ -100,16 +125,21 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   missionEmoji: {
-    fontSize: 48,
+    fontSize: 64,
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: 16,
+  },
+  stickyBottom: {
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+    paddingTop: 12,
+    backgroundColor: Colors.background,
+    gap: 12,
   },
   button: {
     backgroundColor: Colors.success,
     borderRadius: 20,
     paddingVertical: 18,
-    marginHorizontal: 24,
-    marginTop: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -121,6 +151,5 @@ const styles = StyleSheet.create({
   giveUp: {
     color: Colors.lavender,
     textAlign: 'center',
-    marginTop: 16,
   },
 })

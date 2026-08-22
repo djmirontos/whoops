@@ -1,5 +1,14 @@
 import { router } from 'expo-router'
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import {
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '../constants/colors'
 import { useSessionStore } from '../stores/sessionStore'
@@ -43,32 +52,41 @@ export default function AdviceScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.label}>BAD ADVICE</Text>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          style={styles.flex}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={styles.label}>BAD ADVICE</Text>
 
-        {currentResponse ? (
-          <>
-            <Text style={styles.askedCaption}>YOU ASKED:</Text>
-            <Text style={styles.question}>"{currentProblem}"</Text>
+          {currentResponse ? (
+            <>
+              <Text style={styles.askedCaption}>YOU ASKED:</Text>
+              <Text style={styles.question}>"{currentProblem}"</Text>
 
-            <View style={styles.divider} />
+              <View style={styles.divider} />
 
-            <Text style={styles.headline}>{headline}</Text>
-            {body ? <Text style={styles.body}>{body}</Text> : null}
+              <Text style={styles.headline}>{headline}</Text>
+              {body ? <Text style={styles.body}>{body}</Text> : null}
 
-            <Image
-              source={require('../assets/mascott.png')}
-              style={styles.mascot}
-              resizeMode="contain"
-            />
-          </>
-        ) : (
-          <Text style={styles.body}>
-            No advice generated yet. {/* TODO: wire up useAdvice()/sessionStore.generateAdvice() */}
-          </Text>
-        )}
+              <Image
+                source={require('../assets/mascott.png')}
+                style={styles.mascot}
+                resizeMode="contain"
+              />
+            </>
+          ) : (
+            <Text style={styles.body}>
+              No advice generated yet. {/* TODO: wire up useAdvice()/sessionStore.generateAdvice() */}
+            </Text>
+          )}
+        </ScrollView>
 
-        <View style={styles.footer}>
+        <View style={styles.stickyBottom}>
           <Pressable onPress={handleFine} style={styles.button}>
             <Text style={styles.buttonText}>
               {isRefusal ? 'ASK SOMETHING ELSE 😈' : "FINE. I'LL DO IT 😈"}
@@ -78,7 +96,7 @@ export default function AdviceScreen() {
             Try another
           </Text>
         </View>
-      </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   )
 }
@@ -88,8 +106,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  flex: {
+    flex: 1,
+  },
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: 24,
   },
   label: {
     color: Colors.secondary,
@@ -142,15 +164,17 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 16,
   },
-  footer: {
-    marginTop: 'auto',
-    paddingTop: 32,
+  stickyBottom: {
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+    paddingTop: 12,
+    backgroundColor: Colors.background,
+    gap: 12,
   },
   button: {
     backgroundColor: Colors.secondary,
     borderRadius: 20,
     paddingVertical: 18,
-    marginHorizontal: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -162,6 +186,5 @@ const styles = StyleSheet.create({
   tryAnother: {
     color: Colors.lavender,
     textAlign: 'center',
-    marginTop: 16,
   },
 })

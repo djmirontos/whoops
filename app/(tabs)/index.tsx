@@ -4,6 +4,7 @@ import {
   Alert,
   Animated,
   Image,
+  Keyboard,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -43,6 +44,8 @@ export default function HomeScreen() {
   const isAtCharLimit = problem.length >= CHAR_LIMIT
 
   async function handleSubmit() {
+    Keyboard.dismiss()
+
     if (!canSubmit) return
 
     await impactMedium()

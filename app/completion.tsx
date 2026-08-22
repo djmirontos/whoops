@@ -1,6 +1,15 @@
 import { router } from 'expo-router'
 import { useMemo } from 'react'
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import {
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '../constants/colors'
 import { generatePercentage } from '../utils/percentage'
@@ -10,31 +19,37 @@ export default function CompletionScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.headline}>WHOOPS.</Text>
-        <Text style={styles.subhead}>You actually did it.</Text>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          style={styles.flex}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={styles.headline}>WHOOPS.</Text>
+          <Text style={styles.subhead}>You actually did it.</Text>
 
-        <Image
-          source={require('../assets/mascott.png')}
-          style={styles.mascot}
-          resizeMode="contain"
-        />
+          <Image
+            source={require('../assets/mascott.png')}
+            style={styles.mascot}
+            resizeMode="contain"
+          />
 
-        <Text style={styles.percentageLabel}>The world is now</Text>
-        <Text style={styles.percentageLine}>
-          <Text style={styles.percentageNumber}>{percentage}%</Text>
-          <Text style={styles.percentageSuffix}> better.</Text>
-        </Text>
+          <Text style={styles.percentageLabel}>The world is now</Text>
+          <Text style={styles.percentageLine}>
+            <Text style={styles.percentageNumber}>{percentage}%</Text>
+            <Text style={styles.percentageSuffix}> better.</Text>
+          </Text>
+        </ScrollView>
 
-        <View style={styles.actions}>
+        <View style={styles.stickyBottom}>
           <Pressable onPress={() => router.replace('/')} style={styles.primaryButton}>
             <Text style={styles.primaryButtonText}>ANOTHER PROBLEM 😈</Text>
           </Pressable>
 
-          <Pressable
-            onPress={() => router.push('/share-preview')}
-            style={styles.shareButton}
-          >
+          <Pressable onPress={() => router.push('/share-preview')} style={styles.shareButton}>
             <Text style={styles.shareButtonText}>📤 SHARE THIS WHOOPS</Text>
           </Pressable>
 
@@ -42,7 +57,7 @@ export default function CompletionScreen() {
             I'm done for now
           </Text>
         </View>
-      </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   )
 }
@@ -52,9 +67,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  flex: {
+    flex: 1,
+  },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 40,
+    paddingBottom: 24,
   },
   headline: {
     fontSize: 48,
@@ -93,14 +111,17 @@ const styles = StyleSheet.create({
     color: Colors.lavender,
     fontSize: 16,
   },
-  actions: {
-    marginTop: 32,
+  stickyBottom: {
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+    paddingTop: 12,
+    backgroundColor: Colors.background,
+    gap: 12,
   },
   primaryButton: {
     backgroundColor: Colors.primary,
     borderRadius: 20,
     paddingVertical: 18,
-    marginHorizontal: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -115,8 +136,6 @@ const styles = StyleSheet.create({
     borderColor: Colors.secondary,
     borderRadius: 20,
     paddingVertical: 18,
-    marginHorizontal: 24,
-    marginTop: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -128,6 +147,5 @@ const styles = StyleSheet.create({
   doneForNow: {
     color: Colors.lavender,
     textAlign: 'center',
-    marginTop: 16,
   },
 })
