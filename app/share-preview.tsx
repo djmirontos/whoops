@@ -20,10 +20,6 @@ type ShareStyleLabel = 'Classic' | 'Chaos' | 'Wisdom'
 
 const STYLE_LABELS: ShareStyleLabel[] = ['Classic', 'Chaos', 'Wisdom']
 
-function truncate(text: string, maxLength: number): string {
-  return text.length > maxLength ? `${text.slice(0, maxLength).trim()}...` : text
-}
-
 export default function SharePreviewScreen() {
   const currentProblem = useSessionStore((state) => state.currentProblem)
   const currentResponse = useSessionStore((state) => state.currentResponse)
@@ -100,7 +96,9 @@ export default function SharePreviewScreen() {
 
                   <Text style={styles.classicWhoopsLabel}>Whoops:</Text>
                   <Text style={styles.classicHeadline}>{headline}</Text>
-                  <Text style={styles.classicBody}>{truncate(body, 120)}</Text>
+                  <Text style={styles.classicBody}>
+                    {body.length > 150 ? body.substring(0, 150) + '...' : body}
+                  </Text>
 
                   <View style={styles.classicBottomRow}>
                     <Text style={styles.classicBrandText}>😈 whoops.app</Text>
@@ -124,7 +122,9 @@ export default function SharePreviewScreen() {
 
                   <Text style={styles.chaosWhoopsLabel}>Whoops:</Text>
                   <Text style={styles.chaosHeadline}>{headline}</Text>
-                  <Text style={styles.chaosBody}>{truncate(body, 100)}</Text>
+                  <Text style={styles.chaosBody}>
+                    {body.length > 150 ? body.substring(0, 150) + '...' : body}
+                  </Text>
 
                   <Image
                     source={require('../assets/mascott.png')}
@@ -141,9 +141,7 @@ export default function SharePreviewScreen() {
                   <View style={styles.wisdomDivider} />
 
                   <Text style={styles.wisdomHeadline}>{headline}</Text>
-                  <Text style={styles.wisdomBody} numberOfLines={1}>
-                    {body}
-                  </Text>
+                  <Text style={styles.wisdomBody}>{body}</Text>
 
                   <Text style={styles.wisdomSignoff}>— Whoops 😈</Text>
                   <View style={[styles.wisdomDivider, styles.wisdomDividerBottom]} />
