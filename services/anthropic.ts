@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { SYSTEM_PROMPT } from './deepseek'
+import { SYSTEM_PROMPT, extractJsonPayload } from './deepseek'
 import type { WhoopsResponse } from '../types'
 
 // Claude fallback service — used if the DeepSeek call fails or times out.
@@ -15,7 +15,7 @@ export async function generateAdviceFallback(userProblem: string): Promise<Whoop
   try {
     const message = await client.messages.create({
       model: 'claude-sonnet-5',
-      max_tokens: 400,
+      max_tokens: 800,
       system: SYSTEM_PROMPT,
       messages: [
         {
@@ -30,7 +30,7 @@ export async function generateAdviceFallback(userProblem: string): Promise<Whoop
     console.log('[Anthropic] Raw response:', raw)
 
     if (!raw) throw new Error('Empty response from Claude')
-    const cleaned = raw.replace(/```json|```/g, '').trim()
+    const cleaned = extractJsonPayload(raw)
     return JSON.parse(cleaned) as WhoopsResponse
   } catch (error: any) {
     console.error('[Anthropic] ERROR:', error?.message)

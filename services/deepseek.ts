@@ -63,40 +63,59 @@ Schema:
   "shareable": boolean
 }`
 
+// Strips markdown code fences and any leading/trailing prose the model may
+// add despite instructions, keeping just the JSON object substring. Shared
+// with services/anthropic.ts, since Claude does this even more often than
+// DeepSeek and a bare backtick-strip alone was leaving JSON.parse to choke
+// on stray sentences around the object.
+export function extractJsonPayload(raw: string): string {
+  const withoutFences = raw.replace(/```json|```/g, '').trim()
+  const start = withoutFences.indexOf('{')
+  const end = withoutFences.lastIndexOf('}')
+  if (start === -1 || end === -1 || end < start) {
+    return withoutFences
+  }
+  return withoutFences.slice(start, end + 1)
+}
+
 export async function generateAdvice(userProblem: string): Promise<WhoopsResponse> {
   console.log('[DeepSeek] Starting API call...')
   console.log('[DeepSeek] API Key exists:', !!process.env.EXPO_PUBLIC_DEEPSEEK_API_KEY)
-  console.log('[DeepSeek] API Key prefix:', process.env.EXPO_PUBLIC_DEEPSEEK_API_KEY?.substring(0, 8))
-  console.log('[DeepSeek] User problem:', userProblem)
 
   try {
+    // @ts-ignore — DeepSeek V4 specific parameters (thinking, reasoning_effort)
+    // aren't in the OpenAI SDK's type surface; TS reports the mismatch on the
+    // call expression itself, not on the individual properties below.
     const completion = await client.chat.completions.create({
       model: 'deepseek-v4-flash',
-      max_tokens: 400,
+      max_tokens: 800,
       temperature: 0.9,
-      response_format: { type: 'json_object' },
+      stream: false,
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         {
           role: 'user',
-          content: `User's problem: "${userProblem}"\n\nGenerate a Whoops bad advice response.`,
+          content: `User's problem: "${userProblem}"\n\nGenerate a Whoops bad advice response. Return ONLY valid JSON, no markdown, no backticks, no explanation.`,
         },
       ],
+      thinking: { type: 'enabled' },
+      reasoning_effort: 'low',
     })
 
-    console.log('[DeepSeek] Raw response:', completion.choices[0].message.content)
+    console.log('[DeepSeek] finish_reason:', completion.choices[0].finish_reason)
 
     const raw = completion.choices[0].message.content
+    console.log('[DeepSeek] Raw response:', raw)
+
     if (!raw) throw new Error('Empty response from DeepSeek')
 
-    const parsed = JSON.parse(raw) as WhoopsResponse
-    console.log('[DeepSeek] Parsed response:', JSON.stringify(parsed, null, 2))
-
+    const cleaned = extractJsonPayload(raw)
+    const parsed = JSON.parse(cleaned) as WhoopsResponse
+    console.log('[DeepSeek] Success:', parsed.response?.substring(0, 50))
     return parsed
   } catch (error: any) {
     console.error('[DeepSeek] ERROR:', error?.message)
     console.error('[DeepSeek] ERROR status:', error?.status)
-    console.error('[DeepSeek] ERROR type:', error?.type)
     console.error('[DeepSeek] Full error:', JSON.stringify(error, null, 2))
     throw error
   }
