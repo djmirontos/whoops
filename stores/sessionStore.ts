@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { generateAdviceFallback } from '../services/anthropic'
 import { generateAdvice as generateDeepSeekAdvice } from '../services/deepseek'
-import { buildSafetyRefusal, classifyInput } from '../services/safety'
+import { buildSafetyRefusal, classifyInput, validateOutput } from '../services/safety'
 import {
   getHistory,
   getTodayDateKey,
@@ -136,6 +136,21 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         response = await generateDeepSeekAdvice(problem)
       } catch {
         response = await generateAdviceFallback(problem)
+      }
+
+      // Layer 2 safety check — validate the AI's own output before showing
+      // it (spec Section 7). Treated the same as a Layer 1 refusal: no
+      // usage charge, no history/Supabase save for the blocked content.
+      const outputCheck = validateOutput(response)
+      console.log('[Safety] Output check:', outputCheck)
+      if (!outputCheck.safe) {
+        console.warn('[Safety] Output blocked:', outputCheck.reason)
+        set({
+          currentResponse: buildSafetyRefusal('output_validation'),
+          currentInteractionId: null,
+          isLoading: false,
+        })
+        return
       }
 
       await incrementTodayUsage()

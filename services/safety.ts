@@ -17,6 +17,19 @@ const BLOCKED_PATTERNS: RegExp[] = [
   /how (do i|to) (hurt|harm|kill)/i,
 ]
 
+// Phrases that mean the AI broke character and refused mid-generation,
+// rather than following the "set safe:false + in-character refusal" rule.
+const REFUSAL_PHRASES = [
+  'as an ai',
+  'i cannot',
+  "i'm not able",
+  'i am not able',
+  'i apologize',
+  "i'm sorry i can't",
+  'i am unable',
+  'not appropriate',
+]
+
 export function classifyInput(text: string): SafetyClassification {
   for (const pattern of BLOCKED_PATTERNS) {
     if (pattern.test(text)) {
@@ -34,26 +47,45 @@ export function classifyInput(text: string): SafetyClassification {
   return { safe: true }
 }
 
-// Layer 2 — output validation, run after the AI response comes back
-export function validateOutput(response: string): SafetyClassification {
-  // TODO: implement output validation per spec Section 7
+// Layer 2 — output validation, run after the AI response comes back.
+// Even though the input was already classified safe, the model's own
+// response text still gets checked before it's shown to the user.
+export function validateOutput(response: WhoopsResponse): SafetyClassification {
+  const text = response.response
+  const lowerResponse = text.toLowerCase()
+
+  const containsBlocked = BLOCKED_TOPICS.some((topic) => lowerResponse.includes(topic))
+  const matchesPattern = BLOCKED_PATTERNS.some((pattern) => pattern.test(text))
+  if (containsBlocked || matchesPattern) {
+    return { safe: false, reason: 'output_blocked' }
+  }
+
+  const hasRefusal = REFUSAL_PHRASES.some((phrase) => lowerResponse.includes(phrase))
+  if (hasRefusal) {
+    return { safe: false, reason: 'ai_refusal' }
+  }
+
+  if (text.trim().length < 10) {
+    return { safe: false, reason: 'too_short' }
+  }
+
   return { safe: true }
 }
 
-// In-character refusal shown whenever classifyInput() flags the input as
-// unsafe (spec Section 8: example unsafe response).
+// In-character refusal shown whenever classifyInput() or validateOutput()
+// flags something as unsafe (spec Section 8: example unsafe response).
 export function buildSafetyRefusal(reason?: string): WhoopsResponse {
   return {
     safe: false,
     response:
-      "WHOAH. 😳\n\nEven I know when to stop being an idiot.\n\nThat's not something I'm going to mess around with.\n\nFor something this serious, talk to a qualified professional.",
+      "WHOA. 😳\n\nEven I know when to stop being an idiot.\n\nThat's not something I'm going to mess around with.\n\nFor something this serious, talk to a qualified professional.",
     tone: 'deadpan',
     category: 'safety',
     challenge: {
       enabled: false,
       instruction: '',
       estimatedSeconds: 0,
-      emoji: '',
+      emoji: '😳',
     },
     emoji: '😳',
     shareable: false,
