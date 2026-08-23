@@ -1,7 +1,10 @@
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
+import * as MediaLibrary from 'expo-media-library'
+import * as Sharing from 'expo-sharing'
 import { useEffect, useRef, useState } from 'react'
 import {
+  ActivityIndicator,
   Alert,
   Image,
   ScrollView,
@@ -11,8 +14,8 @@ import {
   View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { captureRef } from 'react-native-view-shot'
 import { Colors } from '../constants/colors'
-import { captureShareCard, saveImageToGallery, shareImage } from '../services/shareCard'
 import { getShareStyle } from '../services/storage'
 import { markShared } from '../services/supabase'
 import { useSessionStore } from '../stores/sessionStore'
@@ -26,6 +29,7 @@ export default function SharePreviewScreen() {
   const currentResponse = useSessionStore((state) => state.currentResponse)
   const currentInteractionId = useSessionStore((state) => state.currentInteractionId)
   const [selectedStyle, setSelectedStyle] = useState<ShareCardStyle>('Classic')
+  const [isCapturing, setIsCapturing] = useState(false)
   const cardRef = useRef<View>(null)
 
   // Default to the user's saved preference (Me screen → Default Share Style).
@@ -33,26 +37,62 @@ export default function SharePreviewScreen() {
     getShareStyle().then(setSelectedStyle)
   }, [])
 
+  async function captureCard(): Promise<string> {
+    if (!cardRef.current) throw new Error('Card ref not ready')
+    const uri = await captureRef(cardRef, {
+      format: 'jpg',
+      quality: 0.95,
+      result: 'tmpfile',
+    })
+    console.log('[Share] Captured card URI:', uri)
+    return uri
+  }
+
   async function handleShare() {
     try {
-      const uri = await captureShareCard(cardRef)
-      await shareImage(uri)
+      setIsCapturing(true)
+      const uri = await captureCard()
 
       if (currentInteractionId) {
-        markShared(currentInteractionId, selectedStyle.toLowerCase())
+        await markShared(currentInteractionId, selectedStyle.toLowerCase())
       }
-    } catch {
-      Alert.alert('Something went wrong', "Couldn't share this Whoops. Try again.")
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, {
+          mimeType: 'image/jpeg',
+          dialogTitle: 'Share your Whoops 😈',
+          UTI: 'public.jpeg',
+        })
+      } else {
+        Alert.alert('Sharing not available', 'Cannot share on this device')
+      }
+    } catch (error) {
+      console.error('[Share] Error:', error)
+      Alert.alert('Oops 😈', 'Could not capture the card. Try again.')
+    } finally {
+      setIsCapturing(false)
     }
   }
 
   async function handleSave() {
     try {
-      const uri = await captureShareCard(cardRef)
-      await saveImageToGallery(uri)
-      Alert.alert('Saved! 📸', 'Share card saved to gallery')
-    } catch {
-      Alert.alert('Something went wrong', "Couldn't save this Whoops. Try again.")
+      setIsCapturing(true)
+
+      const { status } = await MediaLibrary.requestPermissionsAsync()
+      if (status !== 'granted') {
+        Alert.alert('Permission needed', 'Allow gallery access to save images.')
+        return
+      }
+
+      const uri = await captureCard()
+      await MediaLibrary.saveToLibraryAsync(uri)
+
+      Alert.alert('Saved! 📸', 'Share card saved to your gallery.')
+    } catch (error) {
+      console.error('[Save] Error:', error)
+      Alert.alert('Oops 😈', 'Could not save the image. Try again.')
+    } finally {
+      setIsCapturing(false)
     }
   }
 
@@ -91,85 +131,109 @@ export default function SharePreviewScreen() {
               ))}
             </View>
 
-            <View ref={cardRef} collapsable={false} style={styles.cardWrap}>
-              {selectedStyle === 'Classic' && (
-                <View style={styles.classicCard}>
-                  <Image
-                    source={require('../assets/logo.png')}
-                    style={styles.classicLogo}
-                    resizeMode="contain"
-                  />
-
-                  <Text style={styles.classicMeLabel}>Me:</Text>
-                  <Text style={styles.classicQuestion}>"{currentProblem}"</Text>
-
-                  <View style={styles.classicDivider} />
-
-                  <Text style={styles.classicWhoopsLabel}>Whoops:</Text>
-                  <Text style={styles.classicHeadline}>{headline}</Text>
-                  <Text style={styles.classicBody}>
-                    {body.length > 150 ? body.substring(0, 150) + '...' : body}
-                  </Text>
-
-                  <View style={styles.classicBottomRow}>
-                    <Text style={styles.classicBrandText}>😈 whoops.app</Text>
+            <View style={styles.cardWrap}>
+              <View ref={cardRef} collapsable={false}>
+                {selectedStyle === 'Classic' && (
+                  <View style={styles.classicCard}>
                     <Image
-                      source={require('../assets/mascott.png')}
-                      style={styles.classicMascot}
+                      source={require('../assets/logo.png')}
+                      style={styles.classicLogo}
                       resizeMode="contain"
                     />
+
+                    <Text style={styles.classicMeLabel}>Me:</Text>
+                    <Text style={styles.classicQuestion}>"{currentProblem}"</Text>
+
+                    <View style={styles.classicDivider} />
+
+                    <Text style={styles.classicWhoopsLabel}>Whoops:</Text>
+                    <Text style={styles.classicHeadline}>{headline}</Text>
+                    <Text style={styles.classicBody}>
+                      {body.length > 150 ? body.substring(0, 150) + '...' : body}
+                    </Text>
+
+                    <View style={styles.classicBottomRow}>
+                      <Text style={styles.classicBrandText}>😈 whoops.app</Text>
+                      <Image
+                        source={require('../assets/mascott.png')}
+                        style={styles.classicMascot}
+                        resizeMode="contain"
+                      />
+                    </View>
                   </View>
+                )}
+
+                {selectedStyle === 'Chaos' && (
+                  <View style={styles.chaosCard}>
+                    <Text style={styles.chaosTitle}>I ASKED BAD ADVICE</Text>
+
+                    <View style={styles.chaosDivider} />
+
+                    <Text style={styles.chaosMeLabel}>Me:</Text>
+                    <Text style={styles.chaosQuestion}>"{currentProblem}"</Text>
+
+                    <Text style={styles.chaosWhoopsLabel}>Whoops:</Text>
+                    <Text style={styles.chaosHeadline}>{headline}</Text>
+                    <Text style={styles.chaosBody}>
+                      {body.length > 150 ? body.substring(0, 150) + '...' : body}
+                    </Text>
+
+                    <Image
+                      source={require('../assets/mascott.png')}
+                      style={styles.chaosMascot}
+                      resizeMode="contain"
+                    />
+                    <Text style={styles.chaosBrand}>😈 whoops.app</Text>
+                  </View>
+                )}
+
+                {selectedStyle === 'Wisdom' && (
+                  <View style={styles.wisdomCard}>
+                    <Text style={styles.wisdomLabel}>WHOOPS WISDOM</Text>
+                    <View style={styles.wisdomDivider} />
+
+                    <Text style={styles.wisdomHeadline}>{headline}</Text>
+                    <Text style={styles.wisdomBody}>{body}</Text>
+
+                    <Text style={styles.wisdomSignoff}>— Whoops 😈</Text>
+                    <View style={[styles.wisdomDivider, styles.wisdomDividerBottom]} />
+                    <Text style={styles.wisdomUrl}>whoops.app</Text>
+                  </View>
+                )}
+              </View>
+
+              {isCapturing ? (
+                <View style={styles.capturingOverlay}>
+                  <ActivityIndicator color={Colors.textPrimary} size="large" />
                 </View>
-              )}
-
-              {selectedStyle === 'Chaos' && (
-                <View style={styles.chaosCard}>
-                  <Text style={styles.chaosTitle}>I ASKED BAD ADVICE</Text>
-
-                  <View style={styles.chaosDivider} />
-
-                  <Text style={styles.chaosMeLabel}>Me:</Text>
-                  <Text style={styles.chaosQuestion}>"{currentProblem}"</Text>
-
-                  <Text style={styles.chaosWhoopsLabel}>Whoops:</Text>
-                  <Text style={styles.chaosHeadline}>{headline}</Text>
-                  <Text style={styles.chaosBody}>
-                    {body.length > 150 ? body.substring(0, 150) + '...' : body}
-                  </Text>
-
-                  <Image
-                    source={require('../assets/mascott.png')}
-                    style={styles.chaosMascot}
-                    resizeMode="contain"
-                  />
-                  <Text style={styles.chaosBrand}>😈 whoops.app</Text>
-                </View>
-              )}
-
-              {selectedStyle === 'Wisdom' && (
-                <View style={styles.wisdomCard}>
-                  <Text style={styles.wisdomLabel}>WHOOPS WISDOM</Text>
-                  <View style={styles.wisdomDivider} />
-
-                  <Text style={styles.wisdomHeadline}>{headline}</Text>
-                  <Text style={styles.wisdomBody}>{body}</Text>
-
-                  <Text style={styles.wisdomSignoff}>— Whoops 😈</Text>
-                  <View style={[styles.wisdomDivider, styles.wisdomDividerBottom]} />
-                  <Text style={styles.wisdomUrl}>whoops.app</Text>
-                </View>
-              )}
+              ) : null}
             </View>
           </ScrollView>
 
           <View style={styles.bottomButtons}>
-            <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
-              <Ionicons name="share-social" size={20} color={Colors.textPrimary} />
+            <TouchableOpacity
+              style={[styles.shareButton, isCapturing && styles.buttonDisabled]}
+              onPress={handleShare}
+              disabled={isCapturing}
+            >
+              {isCapturing ? (
+                <ActivityIndicator color={Colors.textPrimary} size="small" />
+              ) : (
+                <Ionicons name="share-social" size={20} color={Colors.textPrimary} />
+              )}
               <Text style={styles.shareButtonText}>SHARE IMAGE</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Ionicons name="download-outline" size={20} color={Colors.secondary} />
+            <TouchableOpacity
+              style={[styles.saveButton, isCapturing && styles.buttonDisabled]}
+              onPress={handleSave}
+              disabled={isCapturing}
+            >
+              {isCapturing ? (
+                <ActivityIndicator color={Colors.secondary} size="small" />
+              ) : (
+                <Ionicons name="download-outline" size={20} color={Colors.secondary} />
+              )}
               <Text style={styles.saveButtonText}>SAVE TO GALLERY</Text>
             </TouchableOpacity>
           </View>
@@ -242,6 +306,13 @@ const styles = StyleSheet.create({
     margin: 24,
     borderRadius: 20,
     overflow: 'hidden',
+    position: 'relative',
+  },
+  capturingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   // Classic — warm cream card
@@ -456,5 +527,8 @@ const styles = StyleSheet.create({
     color: Colors.secondary,
     fontSize: 16,
     fontWeight: '700',
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
 })
