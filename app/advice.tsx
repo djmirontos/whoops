@@ -1,12 +1,14 @@
 import { router } from 'expo-router'
 import {
   Image,
+  ImageBackground,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -37,53 +39,80 @@ export default function AdviceScreen() {
     ? splitAdvice(currentResponse.response)
     : { headline: '', body: '' }
 
+  if (currentResponse && isRefusal) {
+    return (
+      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+        <View style={styles.refusalContainer}>
+          <Image
+            source={require('../assets/whoah.png')}
+            style={styles.whoahImage}
+            resizeMode="contain"
+          />
+
+          <Text style={styles.refusalHeadline}>{headline}</Text>
+          <Text style={styles.refusalBody}>{body}</Text>
+
+          <TouchableOpacity onPress={handleFine} style={styles.refusalButton}>
+            <Text style={styles.refusalButtonText}>ASK SOMETHING ELSE 😈</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    )
+  }
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-      <KeyboardAvoidingView
+      <ImageBackground
+        source={require('../assets/main.png')}
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        resizeMode="cover"
       >
-        <ScrollView
+        <View style={styles.backgroundOverlay} />
+
+        <KeyboardAvoidingView
           style={styles.flex}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
-          <Text style={styles.label}>BAD ADVICE</Text>
+          <ScrollView
+            style={styles.flex}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <Text style={styles.label}>BAD ADVICE</Text>
 
-          {currentResponse ? (
-            <>
-              <Text style={styles.askedCaption}>YOU ASKED:</Text>
-              <Text style={styles.question}>"{currentProblem}"</Text>
+            {currentResponse ? (
+              <>
+                <Text style={styles.askedCaption}>YOU ASKED:</Text>
+                <Text style={styles.question}>"{currentProblem}"</Text>
 
-              <View style={styles.divider} />
+                <View style={styles.divider} />
 
-              <Text style={styles.headline}>{headline}</Text>
-              {body ? <Text style={styles.body}>{body}</Text> : null}
+                <Text style={styles.headline}>{headline}</Text>
+                {body ? <Text style={styles.body}>{body}</Text> : null}
 
-              <Image
-                source={require('../assets/mascott.png')}
-                style={styles.mascot}
-                resizeMode="contain"
-              />
-            </>
-          ) : (
-            <Text style={styles.body}>
-              No advice generated yet. {/* TODO: wire up useAdvice()/sessionStore.generateAdvice() */}
+                <Image
+                  source={require('../assets/mascott.png')}
+                  style={styles.mascot}
+                  resizeMode="contain"
+                />
+              </>
+            ) : (
+              <Text style={styles.body}>
+                No advice generated yet. {/* TODO: wire up useAdvice()/sessionStore.generateAdvice() */}
+              </Text>
+            )}
+          </ScrollView>
+
+          <View style={styles.stickyBottom}>
+            <Pressable onPress={handleFine} style={styles.button}>
+              <Text style={styles.buttonText}>{"FINE. I'LL DO IT 😈"}</Text>
+            </Pressable>
+            <Text style={styles.tryAnother} onPress={() => router.back()}>
+              Try another
             </Text>
-          )}
-        </ScrollView>
-
-        <View style={styles.stickyBottom}>
-          <Pressable onPress={handleFine} style={styles.button}>
-            <Text style={styles.buttonText}>
-              {isRefusal ? 'ASK SOMETHING ELSE 😈' : "FINE. I'LL DO IT 😈"}
-            </Text>
-          </Pressable>
-          <Text style={styles.tryAnother} onPress={() => router.back()}>
-            Try another
-          </Text>
-        </View>
-      </KeyboardAvoidingView>
+          </View>
+        </KeyboardAvoidingView>
+      </ImageBackground>
     </SafeAreaView>
   )
 }
@@ -95,6 +124,49 @@ const styles = StyleSheet.create({
   },
   flex: {
     flex: 1,
+  },
+  backgroundOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+  },
+  refusalContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+  },
+  whoahImage: {
+    width: 280,
+    height: 280,
+  },
+  refusalHeadline: {
+    color: Colors.textPrimary,
+    fontSize: 28,
+    fontWeight: '800',
+    textAlign: 'center',
+    marginTop: 24,
+    letterSpacing: -0.5,
+  },
+  refusalBody: {
+    color: Colors.lavender,
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 12,
+    lineHeight: 24,
+  },
+  refusalButton: {
+    backgroundColor: Colors.primary,
+    borderRadius: 20,
+    paddingVertical: 18,
+    paddingHorizontal: 32,
+    marginTop: 32,
+    width: '100%',
+  },
+  refusalButtonText: {
+    color: Colors.textPrimary,
+    fontSize: 16,
+    fontWeight: '700',
+    textAlign: 'center',
   },
   scrollContent: {
     flexGrow: 1,

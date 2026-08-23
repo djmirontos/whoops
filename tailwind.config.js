@@ -8,9 +8,9 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: '#1A0A2E',
-        surface: '#2D1B4E',
-        'surface-raised': '#3D2560',
+        background: '#111111',
+        surface: '#1C1C1E',
+        'surface-raised': '#2C2C2E',
         primary: {
           DEFAULT: '#8B5CF6',
           dark: '#6D28D9',
@@ -21,7 +21,7 @@ module.exports = {
         'text-primary': '#FFFFFF',
         'text-secondary': '#A1A1AA',
         'text-muted': '#52525B',
-        border: '#2D2D3D',
+        border: '#3A3A3C',
         danger: '#EF4444',
       },
     },

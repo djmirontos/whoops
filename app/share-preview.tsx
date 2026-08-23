@@ -38,7 +38,13 @@ export default function SharePreviewScreen() {
   }, [])
 
   async function captureCard(): Promise<string> {
-    if (!cardRef.current) throw new Error('Card ref not ready')
+    if (!cardRef.current) {
+      // Give it a frame to render
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
+    if (!cardRef.current) {
+      throw new Error('Card ref not ready')
+    }
     const uri = await captureRef(cardRef, {
       format: 'jpg',
       quality: 0.95,
@@ -51,6 +57,8 @@ export default function SharePreviewScreen() {
   async function handleShare() {
     try {
       setIsCapturing(true)
+      // Give card time to render fully on Android
+      await new Promise((resolve) => setTimeout(resolve, 300))
       const uri = await captureCard()
 
       if (currentInteractionId) {
@@ -77,6 +85,7 @@ export default function SharePreviewScreen() {
   async function handleSave() {
     try {
       setIsCapturing(true)
+      await new Promise((resolve) => setTimeout(resolve, 300))
 
       const { status } = await MediaLibrary.requestPermissionsAsync()
       if (status !== 'granted') {

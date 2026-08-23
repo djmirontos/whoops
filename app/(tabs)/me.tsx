@@ -4,7 +4,6 @@ import { useCallback, useState } from 'react'
 import {
   Alert,
   Image,
-  Linking,
   ScrollView,
   StyleSheet,
   Switch,
@@ -124,12 +123,12 @@ export default function MeScreen() {
     }
   }
 
-  async function handlePrivacyPolicy() {
-    try {
-      await Linking.openURL('#')
-    } catch (err) {
-      console.error('[Me] Failed to open privacy policy:', err)
-    }
+  function handlePrivacyPolicy() {
+    Alert.alert(
+      'Privacy Policy',
+      'Privacy policy will be available at whoops.app/privacy before launch.',
+      [{ text: 'OK' }]
+    )
   }
 
   function handleAboutWhoops() {
