@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '../constants/colors'
 import { captureShareCard, saveImageToGallery, shareImage } from '../services/shareCard'
+import { markShared } from '../services/supabase'
 import { useSessionStore } from '../stores/sessionStore'
 import { splitAdvice } from '../utils/splitAdvice'
 
@@ -23,6 +24,7 @@ const STYLE_LABELS: ShareStyleLabel[] = ['Classic', 'Chaos', 'Wisdom']
 export default function SharePreviewScreen() {
   const currentProblem = useSessionStore((state) => state.currentProblem)
   const currentResponse = useSessionStore((state) => state.currentResponse)
+  const currentInteractionId = useSessionStore((state) => state.currentInteractionId)
   const [selectedStyle, setSelectedStyle] = useState<ShareStyleLabel>('Classic')
   const cardRef = useRef<View>(null)
 
@@ -30,6 +32,10 @@ export default function SharePreviewScreen() {
     try {
       const uri = await captureShareCard(cardRef)
       await shareImage(uri)
+
+      if (currentInteractionId) {
+        markShared(currentInteractionId, selectedStyle.toLowerCase())
+      }
     } catch {
       Alert.alert('Something went wrong', "Couldn't share this Whoops. Try again.")
     }

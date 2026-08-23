@@ -9,8 +9,10 @@ import {
 import { useFonts } from 'expo-font'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
+import { useEffect } from 'react'
 import { View } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
+import { useSessionStore } from '../stores/sessionStore'
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -19,6 +21,12 @@ export default function RootLayout() {
     PlusJakartaSans_700Bold,
     PlusJakartaSans_800ExtraBold,
   })
+
+  const initializeDevice = useSessionStore((state) => state.initializeDevice)
+
+  useEffect(() => {
+    initializeDevice()
+  }, [initializeDevice])
 
   if (!fontsLoaded) {
     // Blank dark screen until fonts are ready — no flash of unstyled text.
