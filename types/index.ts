@@ -43,7 +43,7 @@ export interface ChallengeSeed {
   emoji: string
 }
 
-export type ShareCardStyle = 'classic' | 'chaos' | 'wisdom'
+export type ShareCardStyle = 'Classic' | 'Chaos' | 'Wisdom'
 
 export interface SafetyClassification {
   safe: boolean

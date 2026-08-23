@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   Alert,
   Image,
@@ -13,20 +13,25 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '../constants/colors'
 import { captureShareCard, saveImageToGallery, shareImage } from '../services/shareCard'
+import { getShareStyle } from '../services/storage'
 import { markShared } from '../services/supabase'
 import { useSessionStore } from '../stores/sessionStore'
+import type { ShareCardStyle } from '../types'
 import { splitAdvice } from '../utils/splitAdvice'
 
-type ShareStyleLabel = 'Classic' | 'Chaos' | 'Wisdom'
-
-const STYLE_LABELS: ShareStyleLabel[] = ['Classic', 'Chaos', 'Wisdom']
+const STYLE_LABELS: ShareCardStyle[] = ['Classic', 'Chaos', 'Wisdom']
 
 export default function SharePreviewScreen() {
   const currentProblem = useSessionStore((state) => state.currentProblem)
   const currentResponse = useSessionStore((state) => state.currentResponse)
   const currentInteractionId = useSessionStore((state) => state.currentInteractionId)
-  const [selectedStyle, setSelectedStyle] = useState<ShareStyleLabel>('Classic')
+  const [selectedStyle, setSelectedStyle] = useState<ShareCardStyle>('Classic')
   const cardRef = useRef<View>(null)
+
+  // Default to the user's saved preference (Me screen → Default Share Style).
+  useEffect(() => {
+    getShareStyle().then(setSelectedStyle)
+  }, [])
 
   async function handleShare() {
     try {

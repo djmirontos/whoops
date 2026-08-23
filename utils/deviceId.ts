@@ -12,3 +12,9 @@ export async function getDeviceId(): Promise<string> {
   await AsyncStorage.setItem(DEVICE_ID_KEY, id)
   return id
 }
+
+// Dev tool: forgets the local device id. A fresh one is generated (and
+// re-registered with Supabase) the next time initializeDevice() runs.
+export async function clearDeviceId(): Promise<void> {
+  await AsyncStorage.removeItem(DEVICE_ID_KEY)
+}

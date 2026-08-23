@@ -83,9 +83,16 @@ export async function clearTodayUsage(): Promise<void> {
   await AsyncStorage.removeItem(`whoops_usage_${dateKey}`)
 }
 
+// Dev tool: wipes local history + resets the whoops/done counters to 0.
+// Removing the keys (rather than writing '0'/'[]') keeps this consistent
+// with getHistory()/getTotalWhoops()/getTotalDone()'s existing defaults.
+export async function clearHistoryAndStats(): Promise<void> {
+  await AsyncStorage.multiRemove([HISTORY_KEY, TOTAL_WHOOPS_KEY, TOTAL_DONE_KEY])
+}
+
 export async function getShareStyle(): Promise<ShareCardStyle> {
   const raw = await AsyncStorage.getItem(SHARE_STYLE_KEY)
-  return raw === 'classic' || raw === 'chaos' || raw === 'wisdom' ? raw : 'classic'
+  return raw === 'Classic' || raw === 'Chaos' || raw === 'Wisdom' ? raw : 'Classic'
 }
 
 export async function setShareStyle(style: ShareCardStyle): Promise<void> {
