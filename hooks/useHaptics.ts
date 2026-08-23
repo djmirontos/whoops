@@ -1,13 +1,29 @@
 import * as Haptics from 'expo-haptics'
+import { getHapticsEnabled } from '../services/storage'
 
 // Haptic feedback hook (spec Section 14: Animation & Haptics)
-// TODO: respect the whoops_haptics setting from services/storage.ts before firing
+async function fireIfEnabled(fire: () => Promise<void>) {
+  try {
+    const enabled = await getHapticsEnabled()
+    if (enabled) {
+      await fire()
+    }
+  } catch (err) {
+    console.error('[Haptics] Failed to check haptics setting:', err)
+  }
+}
+
 export function useHaptics() {
-  const impactLight = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-  const impactMedium = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
-  const impactHeavy = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
-  const notifySuccess = () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-  const notifyWarning = () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
+  const impactLight = () =>
+    fireIfEnabled(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light))
+  const impactMedium = () =>
+    fireIfEnabled(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium))
+  const impactHeavy = () =>
+    fireIfEnabled(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy))
+  const notifySuccess = () =>
+    fireIfEnabled(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success))
+  const notifyWarning = () =>
+    fireIfEnabled(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning))
 
   return { impactLight, impactMedium, impactHeavy, notifySuccess, notifyWarning }
 }

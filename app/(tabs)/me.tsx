@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '../../constants/colors'
 import {
   clearHistoryAndStats,
+  clearOnboarded,
   clearTodayUsage,
   getHapticsEnabled,
   getHistory,
@@ -151,6 +152,11 @@ export default function MeScreen() {
     Alert.alert('Done', 'Cleared!')
   }
 
+  async function handleClearOnboarding() {
+    await clearOnboarded()
+    Alert.alert('Done', 'Cleared!')
+  }
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -262,11 +268,14 @@ export default function MeScreen() {
               <TouchableOpacity style={styles.settingRow} onPress={handleClearHistory}>
                 <Text style={styles.settingLabel}>Clear History</Text>
               </TouchableOpacity>
+              <TouchableOpacity style={styles.settingRow} onPress={handleClearDeviceId}>
+                <Text style={styles.settingLabel}>Clear Device ID</Text>
+              </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.settingRow, styles.settingRowLast]}
-                onPress={handleClearDeviceId}
+                onPress={handleClearOnboarding}
               >
-                <Text style={styles.settingLabel}>Clear Device ID</Text>
+                <Text style={styles.settingLabel}>Clear Onboarding</Text>
               </TouchableOpacity>
             </View>
           </>

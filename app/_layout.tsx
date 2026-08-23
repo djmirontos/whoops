@@ -7,11 +7,12 @@ import {
   PlusJakartaSans_800ExtraBold,
 } from '@expo-google-fonts/plus-jakarta-sans'
 import { useFonts } from 'expo-font'
-import { Stack } from 'expo-router'
+import { Stack, router } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
 import { View } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
+import { isOnboarded } from '../services/storage'
 import { useSessionStore } from '../stores/sessionStore'
 
 export default function RootLayout() {
@@ -28,6 +29,26 @@ export default function RootLayout() {
     initializeDevice()
   }, [initializeDevice])
 
+  // Onboarding gate (spec Section 5, Screen 0) — fires once the Stack below
+  // is mounted. Any read failure is treated as "skip onboarding" rather
+  // than blocking the app.
+  useEffect(() => {
+    if (!fontsLoaded) return
+
+    async function checkOnboarding() {
+      try {
+        const onboarded = await isOnboarded()
+        if (!onboarded) {
+          router.replace('/onboarding')
+        }
+      } catch (err) {
+        console.error('[RootLayout] Onboarding check failed, skipping onboarding:', err)
+      }
+    }
+
+    checkOnboarding()
+  }, [fontsLoaded])
+
   if (!fontsLoaded) {
     // Blank dark screen until fonts are ready — no flash of unstyled text.
     return <View className="flex-1 bg-background" />
@@ -40,7 +61,10 @@ export default function RootLayout() {
       <StatusBar style="light" backgroundColor="#0D0D10" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#0D0D10' } }}>
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="onboarding"
+          options={{ headerShown: false, gestureEnabled: false }}
+        />
         <Stack.Screen name="advice" options={{ headerShown: false }} />
         <Stack.Screen
           name="challenge"

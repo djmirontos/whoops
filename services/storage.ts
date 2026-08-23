@@ -17,6 +17,11 @@ export async function setOnboarded(): Promise<void> {
   await AsyncStorage.setItem(ONBOARDED_KEY, 'true')
 }
 
+// Dev tool: forgets that onboarding was completed, so it reappears on next launch.
+export async function clearOnboarded(): Promise<void> {
+  await AsyncStorage.removeItem(ONBOARDED_KEY)
+}
+
 export async function getHistory(): Promise<HistoryItem[]> {
   const raw = await AsyncStorage.getItem(HISTORY_KEY)
   return raw ? (JSON.parse(raw) as HistoryItem[]) : []
