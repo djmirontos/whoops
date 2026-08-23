@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useFocusEffect } from 'expo-router'
+import { useCallback, useState } from 'react'
 import { getHistory } from '../services/storage'
 import type { HistoryItem } from '../types'
 
-// History management hook — loads/refreshes the local history list.
+// History management hook — reloads the local history list every time the
+// screen using it regains focus, so newly-created items appear immediately.
 export function useHistory() {
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -14,9 +16,11 @@ export function useHistory() {
     setIsLoading(false)
   }, [])
 
-  useEffect(() => {
-    refresh()
-  }, [refresh])
+  useFocusEffect(
+    useCallback(() => {
+      refresh()
+    }, [refresh])
+  )
 
   return { history, isLoading, refresh }
 }

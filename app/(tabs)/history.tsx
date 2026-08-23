@@ -1,47 +1,158 @@
 import { router } from 'expo-router'
-import { FlatList, Text, View } from 'react-native'
-import { SafeArea } from '../../components/layout/SafeArea'
-import { Button } from '../../components/ui/Button'
+import { useState } from 'react'
+import {
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { Colors } from '../../constants/colors'
 import { useHistory } from '../../hooks/useHistory'
+import { useSessionStore } from '../../stores/sessionStore'
+import type { HistoryItem } from '../../types'
+import { relativeTime } from '../../utils/relativeTime'
 
 export default function HistoryScreen() {
-  const { history } = useHistory()
+  const { history, refresh } = useHistory()
+  const loadFromHistory = useSessionStore((state) => state.loadFromHistory)
+  const [refreshing, setRefreshing] = useState(false)
 
-  if (history.length === 0) {
-    return (
-      <SafeArea>
-        <View className="flex-1 items-center justify-center px-6">
-          <Text className="text-center text-text-secondary">
-            Nothing yet.{'\n\n'}Congratulations, you apparently have your life together. 🏆
-          </Text>
-          <Button
-            label="GIVE ME BAD ADVICE"
-            onPress={() => router.push('/')}
-            className="mt-6"
-          />
-        </View>
-      </SafeArea>
-    )
+  async function handleRefresh() {
+    setRefreshing(true)
+    await refresh()
+    setRefreshing(false)
+  }
+
+  function handleItemPress(item: HistoryItem) {
+    loadFromHistory(item)
+    router.push('/advice')
   }
 
   return (
-    <SafeArea>
-      <View className="flex-1 px-6 pt-4">
-        <Text className="text-2xl font-bold text-text-primary">Your Whoops</Text>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <Text style={styles.header}>Your Whoops 😈</Text>
+
+      {history.length === 0 ? (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyTitle}>Nothing yet. 😐</Text>
+          <Text style={styles.emptyBody}>
+            Congratulations, you apparently{'\n'}have your life together.
+          </Text>
+          <TouchableOpacity style={styles.emptyButton} onPress={() => router.push('/')}>
+            <Text style={styles.emptyButtonText}>GIVE ME BAD ADVICE 😈</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
         <FlatList
-          className="mt-4"
           data={history}
           keyExtractor={(item) => item.id}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={Colors.lavender}
+            />
+          }
           renderItem={({ item }) => (
-            <View className="mb-3 rounded-2xl bg-surface p-4">
-              <Text className="text-text-primary" numberOfLines={1}>
-                {item.userProblem.slice(0, 40)}
-              </Text>
-              <Text className="mt-1 text-xs text-text-muted">{item.createdAt}</Text>
-            </View>
+            <TouchableOpacity style={styles.card} onPress={() => handleItemPress(item)}>
+              <Text style={styles.cardEmoji}>😈</Text>
+              <View style={styles.cardContent}>
+                <Text style={styles.cardText} numberOfLines={2}>
+                  {item.userProblem.slice(0, 60)}
+                </Text>
+                <View style={styles.cardMetaRow}>
+                  <Text style={styles.cardTime}>{relativeTime(item.createdAt)}</Text>
+                  {item.completedChallenge ? (
+                    <Text style={styles.cardDone}>✅ Done</Text>
+                  ) : null}
+                </View>
+              </View>
+            </TouchableOpacity>
           )}
         />
-      </View>
-    </SafeArea>
+      )}
+    </SafeAreaView>
   )
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  header: {
+    color: Colors.textPrimary,
+    fontSize: 24,
+    fontWeight: '800',
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 16,
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  emptyTitle: {
+    color: Colors.textPrimary,
+    fontSize: 22,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  emptyBody: {
+    color: Colors.lavender,
+    fontSize: 15,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  emptyButton: {
+    backgroundColor: Colors.primary,
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    marginTop: 24,
+  },
+  emptyButtonText: {
+    color: Colors.textPrimary,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  card: {
+    flexDirection: 'row',
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    padding: 16,
+    marginHorizontal: 24,
+    marginBottom: 12,
+  },
+  cardEmoji: {
+    fontSize: 24,
+  },
+  cardContent: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  cardText: {
+    color: Colors.textPrimary,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  cardMetaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  cardTime: {
+    color: Colors.lavender,
+    fontSize: 12,
+  },
+  cardDone: {
+    color: Colors.success,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+})
