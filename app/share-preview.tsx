@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import * as MediaLibrary from 'expo-media-library'
 import * as Sharing from 'expo-sharing'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -30,7 +30,14 @@ export default function SharePreviewScreen() {
   const currentInteractionId = useSessionStore((state) => state.currentInteractionId)
   const [selectedStyle, setSelectedStyle] = useState<ShareCardStyle>('Classic')
   const [isCapturing, setIsCapturing] = useState(false)
+  const [cardReady, setCardReady] = useState(false)
+  const cardReadyRef = useRef(false)
   const cardRef = useRef<View>(null)
+
+  const onCardLayout = useCallback(() => {
+    cardReadyRef.current = true
+    setCardReady(true)
+  }, [])
 
   // Default to the user's saved preference (Me screen → Default Share Style).
   useEffect(() => {
@@ -38,28 +45,40 @@ export default function SharePreviewScreen() {
   }, [])
 
   async function captureCard(): Promise<string> {
-    if (!cardRef.current) {
-      // Give it a frame to render
-      await new Promise((resolve) => setTimeout(resolve, 100))
+    // Wait for card to be ready with layout
+    if (!cardReadyRef.current || !cardRef.current) {
+      // Wait up to 2 seconds for card to be ready
+      let attempts = 0
+      while ((!cardReadyRef.current || !cardRef.current) && attempts < 20) {
+        await new Promise((resolve) => setTimeout(resolve, 100))
+        attempts++
+      }
     }
+
     if (!cardRef.current) {
-      throw new Error('Card ref not ready')
+      throw new Error('Card ref not ready after waiting')
     }
-    await new Promise((resolve) => setTimeout(resolve, 300))
-    const uri = await captureRef(cardRef, {
-      format: 'jpg',
-      quality: 0.95,
-      result: 'tmpfile',
-    })
-    console.log('[Share] Captured card URI:', uri)
-    return uri
+
+    // Extra delay for Android rendering
+    await new Promise((resolve) => setTimeout(resolve, 200))
+
+    try {
+      const uri = await captureRef(cardRef, {
+        format: 'jpg',
+        quality: 0.95,
+        result: 'tmpfile',
+      })
+      console.log('[Share] Captured URI:', uri)
+      return uri
+    } catch (err) {
+      console.error('[Share] captureRef failed:', err)
+      throw err
+    }
   }
 
   async function handleShare() {
     try {
       setIsCapturing(true)
-      // Give card time to render fully on Android
-      await new Promise((resolve) => setTimeout(resolve, 300))
       const uri = await captureCard()
 
       if (currentInteractionId) {
@@ -86,7 +105,6 @@ export default function SharePreviewScreen() {
   async function handleSave() {
     try {
       setIsCapturing(true)
-      await new Promise((resolve) => setTimeout(resolve, 300))
 
       const { status } = await MediaLibrary.requestPermissionsAsync()
       if (status !== 'granted') {
@@ -142,7 +160,7 @@ export default function SharePreviewScreen() {
             </View>
 
             <View style={styles.cardWrap}>
-              <View ref={cardRef} collapsable={false}>
+              <View ref={cardRef} collapsable={false} onLayout={onCardLayout}>
                 {selectedStyle === 'Classic' && (
                   <View style={styles.classicCard}>
                     <Image
