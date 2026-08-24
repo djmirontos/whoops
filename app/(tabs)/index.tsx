@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import {
@@ -93,16 +94,30 @@ export default function HomeScreen() {
             accessibilityLabel="Whoops mascot"
           />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Tell me your problem... 😈"
-            placeholderTextColor={Colors.lavender}
-            multiline
-            maxLength={CHAR_LIMIT}
-            textAlignVertical="top"
-            value={problem}
-            onChangeText={(text) => setProblem(text.slice(0, CHAR_LIMIT))}
-          />
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={[styles.input, { paddingRight: 44 }]}
+              placeholder="Tell me your problem... 😈"
+              placeholderTextColor={Colors.lavender}
+              multiline
+              maxLength={CHAR_LIMIT}
+              textAlignVertical="top"
+              value={problem}
+              onChangeText={(text) => setProblem(text.slice(0, CHAR_LIMIT))}
+            />
+            {problem.length > 0 && (
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={() => {
+                  setProblem('')
+                  Keyboard.dismiss()
+                }}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons name="close-circle" size={20} color={Colors.textMuted} />
+              </TouchableOpacity>
+            )}
+          </View>
           <Text style={[styles.counter, isAtCharLimit && styles.counterLimit]}>
             {problem.length} / {CHAR_LIMIT}
           </Text>
@@ -228,6 +243,11 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 8,
   },
+  inputWrapper: {
+    position: 'relative',
+    marginHorizontal: 24,
+    marginTop: 16,
+  },
   input: {
     backgroundColor: Colors.surface,
     borderRadius: 20,
@@ -237,8 +257,12 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontSize: 16,
     minHeight: 100,
-    marginTop: 16,
-    marginHorizontal: 24,
+  },
+  clearButton: {
+    position: 'absolute',
+    right: 12,
+    top: 12,
+    zIndex: 1,
   },
   counter: {
     fontSize: 12,
