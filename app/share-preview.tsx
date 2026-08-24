@@ -43,8 +43,17 @@ export default function SharePreviewScreen() {
     }
 
     try {
+      console.log('[Share] Starting capture...')
       // capture() is typed as optional on ViewShot's ref, so guard the call.
-      const uri = await viewShotRef.current.capture?.()
+      // Also race it against a timeout — on some Android devices the native
+      // capture call can hang indefinitely instead of rejecting, which would
+      // otherwise leave the UI stuck on the loading spinner forever.
+      const uri = await Promise.race([
+        viewShotRef.current.capture?.(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Capture timed out after 10s')), 10000)
+        ),
+      ])
       if (!uri) {
         throw new Error('Capture returned no URI')
       }
