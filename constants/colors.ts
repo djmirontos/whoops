@@ -11,7 +11,7 @@ export const Colors = {
   success: '#A3E635',
   textPrimary: '#FFFFFF',
   textSecondary: '#A1A1AA',
-  textMuted: '#52525B',
+  textMuted: '#636366',
   lavender: '#A78BCA',
   lavenderLight: '#E0D0FF',
   tabInactive: '#636366',

@@ -160,7 +160,7 @@ export default function MeScreen() {
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <Image
-          source={require('../../assets/mascott.png')}
+          source={require('../../assets/wisdom.png')}
           style={styles.mascot}
           resizeMode="contain"
         />
@@ -292,8 +292,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   mascot: {
-    width: 100,
-    height: 100,
+    width: 120,
+    height: 120,
     alignSelf: 'center',
     marginTop: 32,
   },

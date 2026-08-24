@@ -171,7 +171,7 @@ function LoadingOverlay() {
         <Text style={[styles.overlaySparkle, styles.overlaySparkleTopLeft]}>✦</Text>
         <Text style={[styles.overlaySparkle, styles.overlaySparkleTopRight]}>✦</Text>
         <Image
-          source={require('../../assets/mascott.png')}
+          source={require('../../assets/classic.png')}
           style={styles.overlayMascot}
           resizeMode="contain"
         />
@@ -210,8 +210,8 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   logo: {
-    width: 180,
-    height: 72,
+    width: 160,
+    height: 64,
     alignSelf: 'center',
     marginTop: 48,
   },
@@ -223,8 +223,8 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   mascot: {
-    width: 120,
-    height: 120,
+    width: 140,
+    height: 140,
     alignSelf: 'center',
     marginTop: 8,
   },

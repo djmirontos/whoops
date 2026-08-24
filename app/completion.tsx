@@ -32,7 +32,7 @@ export default function CompletionScreen() {
           <Text style={styles.subhead}>You actually did it.</Text>
 
           <Image
-            source={require('../assets/mascott.png')}
+            source={require('../assets/happy.png')}
             style={styles.mascot}
             resizeMode="contain"
           />

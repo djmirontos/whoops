@@ -43,7 +43,7 @@ export default function ChallengeScreen() {
           <Text style={styles.youWin}>You win.</Text>
 
           <Image
-            source={require('../assets/mascott.png')}
+            source={require('../assets/approved.png')}
             style={styles.mascot}
             resizeMode="contain"
           />
@@ -63,9 +63,14 @@ export default function ChallengeScreen() {
           <Pressable onPress={handleDidIt} style={styles.button}>
             <Text style={styles.buttonText}>I DID IT ✅</Text>
           </Pressable>
-          <Text style={styles.giveUp} onPress={handleGiveUp}>
-            I give up 😐
-          </Text>
+          <Pressable onPress={handleGiveUp} style={styles.giveUpRow}>
+            <Image
+              source={require('../assets/missed.png')}
+              style={styles.giveUpDevil}
+              resizeMode="contain"
+            />
+            <Text style={styles.giveUp}>I give up 😐</Text>
+          </Pressable>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -147,6 +152,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '800',
     color: Colors.textOnSuccess,
+  },
+  giveUpRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  giveUpDevil: {
+    width: 32,
+    height: 32,
   },
   giveUp: {
     color: Colors.lavender,

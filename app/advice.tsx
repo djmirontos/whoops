@@ -1,7 +1,6 @@
 import { router } from 'expo-router'
 import {
   Image,
-  ImageBackground,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -62,57 +61,49 @@ export default function AdviceScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-      <ImageBackground
-        source={require('../assets/main.png')}
+      <KeyboardAvoidingView
         style={styles.flex}
-        resizeMode="cover"
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View style={styles.backgroundOverlay} />
-
-        <KeyboardAvoidingView
+        <ScrollView
           style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
         >
-          <ScrollView
-            style={styles.flex}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-            <Text style={styles.label}>BAD ADVICE</Text>
+          <Text style={styles.label}>BAD ADVICE</Text>
 
-            {currentResponse ? (
-              <>
-                <Text style={styles.askedCaption}>YOU ASKED:</Text>
-                <Text style={styles.question}>"{currentProblem}"</Text>
+          {currentResponse ? (
+            <>
+              <Text style={styles.askedCaption}>YOU ASKED:</Text>
+              <Text style={styles.question}>"{currentProblem}"</Text>
 
-                <View style={styles.divider} />
+              <View style={styles.divider} />
 
-                <Text style={styles.headline}>{headline}</Text>
-                {body ? <Text style={styles.body}>{body}</Text> : null}
+              <Text style={styles.headline}>{headline}</Text>
+              {body ? <Text style={styles.body}>{body}</Text> : null}
 
-                <Image
-                  source={require('../assets/mascott.png')}
-                  style={styles.mascot}
-                  resizeMode="contain"
-                />
-              </>
-            ) : (
-              <Text style={styles.body}>
-                No advice generated yet. {/* TODO: wire up useAdvice()/sessionStore.generateAdvice() */}
-              </Text>
-            )}
-          </ScrollView>
-
-          <View style={styles.stickyBottom}>
-            <Pressable onPress={handleFine} style={styles.button}>
-              <Text style={styles.buttonText}>{"FINE. I'LL DO IT 😈"}</Text>
-            </Pressable>
-            <Text style={styles.tryAnother} onPress={() => router.back()}>
-              Try another
+              <Image
+                source={require('../assets/main.png')}
+                style={styles.mascot}
+                resizeMode="contain"
+              />
+            </>
+          ) : (
+            <Text style={styles.body}>
+              No advice generated yet. {/* TODO: wire up useAdvice()/sessionStore.generateAdvice() */}
             </Text>
-          </View>
-        </KeyboardAvoidingView>
-      </ImageBackground>
+          )}
+        </ScrollView>
+
+        <View style={styles.stickyBottom}>
+          <Pressable onPress={handleFine} style={styles.button}>
+            <Text style={styles.buttonText}>{"FINE. I'LL DO IT 😈"}</Text>
+          </Pressable>
+          <Text style={styles.tryAnother} onPress={() => router.back()}>
+            Try another
+          </Text>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   )
 }
@@ -125,10 +116,6 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
-  backgroundOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.55)',
-  },
   refusalContainer: {
     flex: 1,
     alignItems: 'center',
@@ -136,8 +123,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   whoahImage: {
-    width: 280,
-    height: 280,
+    width: 200,
+    height: 200,
   },
   refusalHeadline: {
     color: Colors.textPrimary,
@@ -218,8 +205,8 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   mascot: {
-    width: 80,
-    height: 80,
+    width: 120,
+    height: 120,
     alignSelf: 'center',
     marginTop: 16,
   },

@@ -2,6 +2,7 @@ import { router } from 'expo-router'
 import { useState } from 'react'
 import {
   FlatList,
+  Image,
   RefreshControl,
   StyleSheet,
   Text,
@@ -37,6 +38,11 @@ export default function HistoryScreen() {
 
       {history.length === 0 ? (
         <View style={styles.emptyState}>
+          <Image
+            source={require('../../assets/nothing.png')}
+            style={styles.emptyDevil}
+            resizeMode="contain"
+          />
           <Text style={styles.emptyTitle}>Nothing yet. 😐</Text>
           <Text style={styles.emptyBody}>
             Congratulations, you apparently{'\n'}have your life together.
@@ -96,6 +102,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
+  },
+  emptyDevil: {
+    width: 160,
+    height: 160,
+    marginBottom: 16,
   },
   emptyTitle: {
     color: Colors.textPrimary,

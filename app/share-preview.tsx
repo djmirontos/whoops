@@ -45,6 +45,7 @@ export default function SharePreviewScreen() {
     if (!cardRef.current) {
       throw new Error('Card ref not ready')
     }
+    await new Promise((resolve) => setTimeout(resolve, 300))
     const uri = await captureRef(cardRef, {
       format: 'jpg',
       quality: 0.95,

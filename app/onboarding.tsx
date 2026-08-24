@@ -48,13 +48,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   logo: {
-    width: 220,
-    height: 88,
+    width: 200,
+    height: 80,
     alignSelf: 'center',
   },
   mascot: {
-    width: 180,
-    height: 180,
+    width: 200,
+    height: 200,
     alignSelf: 'center',
     marginTop: 8,
   },
