@@ -89,7 +89,7 @@ export async function generateAdvice(userProblem: string): Promise<WhoopsRespons
     const completion = await Promise.race([
       client.chat.completions.create({
         model: 'deepseek-v4-flash',
-        max_tokens: 500,
+        max_tokens: 1000,
         temperature: 0.9,
         stream: false,
         messages: [
