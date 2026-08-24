@@ -22,7 +22,6 @@ export default function AdviceScreen() {
   const isRefusal = currentResponse ? !currentResponse.safe : false
 
   function handleFine() {
-    // TODO: save to history (spec Section 5, Screen 2) before navigating
     if (isRefusal) {
       // Spec Section 5, Screen 8: a safety refusal never continues into the
       // challenge/completion celebration flow.
@@ -89,9 +88,7 @@ export default function AdviceScreen() {
               />
             </>
           ) : (
-            <Text style={styles.body}>
-              No advice generated yet. {/* TODO: wire up useAdvice()/sessionStore.generateAdvice() */}
-            </Text>
+            <Text style={styles.body}>No advice generated yet.</Text>
           )}
         </ScrollView>
 

@@ -24,7 +24,15 @@ export async function clearOnboarded(): Promise<void> {
 
 export async function getHistory(): Promise<HistoryItem[]> {
   const raw = await AsyncStorage.getItem(HISTORY_KEY)
-  return raw ? (JSON.parse(raw) as HistoryItem[]) : []
+  if (!raw) return []
+
+  try {
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? (parsed as HistoryItem[]) : []
+  } catch {
+    console.error('[Storage] History parse failed, returning empty')
+    return []
+  }
 }
 
 export async function saveHistory(items: HistoryItem[]): Promise<void> {

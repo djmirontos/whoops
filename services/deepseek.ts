@@ -80,27 +80,28 @@ export function extractJsonPayload(raw: string): string {
 
 export async function generateAdvice(userProblem: string): Promise<WhoopsResponse> {
   console.log('[DeepSeek] Starting API call...')
-  console.log('[DeepSeek] API Key exists:', !!process.env.EXPO_PUBLIC_DEEPSEEK_API_KEY)
 
   try {
-    // @ts-ignore — DeepSeek V4 specific parameters (thinking, reasoning_effort)
-    // aren't in the OpenAI SDK's type surface; TS reports the mismatch on the
-    // call expression itself, not on the individual properties below.
-    const completion = await client.chat.completions.create({
-      model: 'deepseek-v4-flash',
-      max_tokens: 2000,
-      temperature: 0.9,
-      stream: false,
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        {
-          role: 'user',
-          content: `User's problem: "${userProblem}"\n\nGenerate a Whoops bad advice response. Return ONLY valid JSON, no markdown, no backticks, no explanation.`,
-        },
-      ],
-      thinking: { type: 'enabled' },
-      reasoning_effort: 'low',
-    })
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('DeepSeek timeout after 15s')), 15000)
+    )
+
+    const completion = await Promise.race([
+      client.chat.completions.create({
+        model: 'deepseek-v4-flash',
+        max_tokens: 500,
+        temperature: 0.9,
+        stream: false,
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          {
+            role: 'user',
+            content: `User's problem: "${userProblem}"\n\nGenerate a Whoops bad advice response. Return ONLY valid JSON, no markdown, no backticks, no explanation.`,
+          },
+        ],
+      }),
+      timeoutPromise,
+    ])
 
     console.log('[DeepSeek] finish_reason:', completion.choices[0].finish_reason)
 
@@ -116,7 +117,6 @@ export async function generateAdvice(userProblem: string): Promise<WhoopsRespons
   } catch (error: any) {
     console.error('[DeepSeek] ERROR:', error?.message)
     console.error('[DeepSeek] ERROR status:', error?.status)
-    console.error('[DeepSeek] Full error:', JSON.stringify(error, null, 2))
     throw error
   }
 }

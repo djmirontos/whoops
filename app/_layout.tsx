@@ -57,9 +57,9 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       {/* style="light" renders light status bar content, which is correct
-          against our near-black #0D0D10 background. */}
-      <StatusBar style="light" backgroundColor="#0D0D10" />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#0D0D10' } }}>
+          against our near-black #111111 background. */}
+      <StatusBar style="light" backgroundColor="#111111" />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#111111' } }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
           name="onboarding"

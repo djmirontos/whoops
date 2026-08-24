@@ -104,19 +104,27 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   generateAdvice: async () => {
+    if (get().isLoading) {
+      console.log('[Session] Already loading, ignoring tap')
+      return
+    }
+
     set({ isLoading: true, error: null, rateLimited: false })
 
     const usageCount = await getTodayUsageCount()
-    // TODO(debug): remove these once the rate-limit issue is confirmed fixed on-device
-    console.log('Rate limit check - count:', usageCount, typeof usageCount)
-    console.log('Date key:', getTodayDateKey())
+    if (__DEV__) {
+      console.log('Rate limit check - count:', usageCount, typeof usageCount)
+      console.log('Date key:', getTodayDateKey())
+    }
     if (usageCount >= DAILY_LIMIT) {
       set({ isLoading: false, rateLimited: true })
       return
     }
 
-    console.log('[Session] Generating advice for:', get().currentProblem)
-    console.log('[Session] Rate limit count:', usageCount)
+    if (__DEV__) {
+      console.log('[Session] Generating advice...')
+      console.log('[Session] Rate limit count:', usageCount)
+    }
 
     const problem = get().currentProblem
 

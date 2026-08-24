@@ -31,7 +31,7 @@ export default function HomeScreen() {
   const [showLimitModal, setShowLimitModal] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const { setCurrentProblem, generateAdvice } = useAdvice()
+  const { setCurrentProblem, generateAdvice, isLoading } = useAdvice()
   const { impactMedium } = useHaptics()
 
   useEffect(() => {
@@ -109,7 +109,7 @@ export default function HomeScreen() {
 
           <Pressable
             onPress={handleSubmit}
-            disabled={!canSubmit}
+            disabled={!canSubmit || isLoading}
             style={[styles.button, !canSubmit && styles.buttonDisabled]}
           >
             <Text style={styles.buttonText}>GET BAD ADVICE 😈</Text>

@@ -10,20 +10,26 @@ const client = new Anthropic({
 
 export async function generateAdviceFallback(userProblem: string): Promise<WhoopsResponse> {
   console.log('[Anthropic] DeepSeek failed, trying Claude fallback...')
-  console.log('[Anthropic] API Key exists:', !!process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY)
 
   try {
-    const message = await client.messages.create({
-      model: 'claude-sonnet-5',
-      max_tokens: 800,
-      system: SYSTEM_PROMPT,
-      messages: [
-        {
-          role: 'user',
-          content: `User's problem: "${userProblem}"\n\nGenerate a Whoops bad advice response.`,
-        },
-      ],
-    })
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Claude timeout after 15s')), 15000)
+    )
+
+    const message = await Promise.race([
+      client.messages.create({
+        model: 'claude-sonnet-5',
+        max_tokens: 800,
+        system: SYSTEM_PROMPT,
+        messages: [
+          {
+            role: 'user',
+            content: `User's problem: "${userProblem}"\n\nGenerate a Whoops bad advice response.`,
+          },
+        ],
+      }),
+      timeoutPromise,
+    ])
 
     const block = message.content[0]
     const raw = block.type === 'text' ? block.text : ''
@@ -55,7 +61,6 @@ export async function generateAdviceFallback(userProblem: string): Promise<Whoop
     return JSON.parse(cleaned) as WhoopsResponse
   } catch (error: any) {
     console.error('[Anthropic] ERROR:', error?.message)
-    console.error('[Anthropic] Full error:', JSON.stringify(error, null, 2))
     throw error
   }
 }
