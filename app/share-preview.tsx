@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import * as MediaLibrary from 'expo-media-library'
 import * as Sharing from 'expo-sharing'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -14,7 +14,7 @@ import {
   View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { captureRef } from 'react-native-view-shot'
+import ViewShot from 'react-native-view-shot'
 import { Colors } from '../constants/colors'
 import { getShareStyle } from '../services/storage'
 import { markShared } from '../services/supabase'
@@ -30,14 +30,7 @@ export default function SharePreviewScreen() {
   const currentInteractionId = useSessionStore((state) => state.currentInteractionId)
   const [selectedStyle, setSelectedStyle] = useState<ShareCardStyle>('Classic')
   const [isCapturing, setIsCapturing] = useState(false)
-  const [cardReady, setCardReady] = useState(false)
-  const cardReadyRef = useRef(false)
-  const cardRef = useRef<View>(null)
-
-  const onCardLayout = useCallback(() => {
-    cardReadyRef.current = true
-    setCardReady(true)
-  }, [])
+  const viewShotRef = useRef<ViewShot>(null)
 
   // Default to the user's saved preference (Me screen → Default Share Style).
   useEffect(() => {
@@ -45,33 +38,20 @@ export default function SharePreviewScreen() {
   }, [])
 
   async function captureCard(): Promise<string> {
-    // Wait for card to be ready with layout
-    if (!cardReadyRef.current || !cardRef.current) {
-      // Wait up to 2 seconds for card to be ready
-      let attempts = 0
-      while ((!cardReadyRef.current || !cardRef.current) && attempts < 20) {
-        await new Promise((resolve) => setTimeout(resolve, 100))
-        attempts++
-      }
+    if (!viewShotRef.current) {
+      throw new Error('ViewShot ref not ready')
     }
-
-    if (!cardRef.current) {
-      throw new Error('Card ref not ready after waiting')
-    }
-
-    // Extra delay for Android rendering
-    await new Promise((resolve) => setTimeout(resolve, 200))
 
     try {
-      const uri = await captureRef(cardRef, {
-        format: 'jpg',
-        quality: 0.95,
-        result: 'tmpfile',
-      })
+      // capture() is typed as optional on ViewShot's ref, so guard the call.
+      const uri = await viewShotRef.current.capture?.()
+      if (!uri) {
+        throw new Error('Capture returned no URI')
+      }
       console.log('[Share] Captured URI:', uri)
       return uri
     } catch (err) {
-      console.error('[Share] captureRef failed:', err)
+      console.error('[Share] Capture failed:', err)
       throw err
     }
   }
@@ -160,7 +140,14 @@ export default function SharePreviewScreen() {
             </View>
 
             <View style={styles.cardWrap}>
-              <View ref={cardRef} collapsable={false} onLayout={onCardLayout}>
+              <ViewShot
+                ref={viewShotRef}
+                options={{
+                  format: 'jpg',
+                  quality: 0.95,
+                  result: 'tmpfile',
+                }}
+              >
                 {selectedStyle === 'Classic' && (
                   <View style={styles.classicCard}>
                     <Image
@@ -228,7 +215,7 @@ export default function SharePreviewScreen() {
                     <Text style={styles.wisdomUrl}>whoops.app</Text>
                   </View>
                 )}
-              </View>
+              </ViewShot>
 
               {isCapturing ? (
                 <View style={styles.capturingOverlay}>
