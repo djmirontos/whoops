@@ -20,7 +20,7 @@ module.exports = {
         success: '#A3E635',
         'text-primary': '#FFFFFF',
         'text-secondary': '#A1A1AA',
-        'text-muted': '#52525B',
+        'text-muted': '#636366',
         border: '#3A3A3C',
         danger: '#EF4444',
       },

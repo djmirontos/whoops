@@ -1406,6 +1406,10 @@ Required before launch:
 | 1.0 | 2026-08-21 | Initial spec created from plan.md + design.md |
 | 1.1 | 2026-08-21 | Added monetization, pricing, rate limits |
 | 1.3 | 2026-08-21 | Added pre-launch security checklist (Section 22) |
+| 1.4 | 2026-08-23 | Pre-build audit fixes - timeout, guards, logs, colors, permissions |
+| 1.5 | 2026-08-23 | Asset optimization - 3.9MB to 2.2MB |
+| 1.6 | 2026-08-23 | Multilingual support added to AI system prompt |
+| 1.7 | 2026-08-23 | RLS fix, dead code cleanup |
 
 > 📌 Update this table every time a significant decision is made or spec changes.
 

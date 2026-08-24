@@ -1,18 +1,41 @@
 import { createClient } from '@supabase/supabase-js'
 import type { WhoopsResponse } from '../types'
+import { getDeviceId } from '../utils/deviceId'
 
-const supabase = createClient(
-  process.env.EXPO_PUBLIC_SUPABASE_URL!,
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
-)
+// We need to add device_id header to every request
+// so RLS policies can scope reads to this device only
 
-export default supabase
+export async function getSupabaseClient() {
+  const deviceId = await getDeviceId()
+  return createClient(
+    process.env.EXPO_PUBLIC_SUPABASE_URL!,
+    process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      global: {
+        headers: {
+          'x-device-id': deviceId,
+        },
+      },
+    }
+  )
+}
+
+// Keep a cached instance after first init
+let _client: Awaited<ReturnType<typeof getSupabaseClient>> | null = null
+
+export async function getClient() {
+  if (!_client) {
+    _client = await getSupabaseClient()
+  }
+  return _client
+}
 
 // Register (or touch) the anonymous device row on launch.
 // Never throws — analytics/history mirroring must not block the core loop.
 export async function registerDevice(deviceId: string): Promise<void> {
   try {
-    const { error } = await supabase.from('devices').upsert(
+    const client = await getClient()
+    const { error } = await client.from('devices').upsert(
       {
         device_id: deviceId,
         last_seen: new Date().toISOString(),
@@ -38,7 +61,8 @@ export async function saveInteraction(params: {
   safetyBlocked: boolean
 }): Promise<string | null> {
   try {
-    const { data, error } = await supabase
+    const client = await getClient()
+    const { data, error } = await client
       .from('interactions')
       .insert({
         device_id: params.deviceId,
@@ -64,7 +88,8 @@ export async function saveInteraction(params: {
 
 export async function markChallengeCompleted(interactionId: string): Promise<void> {
   try {
-    const { error } = await supabase
+    const client = await getClient()
+    const { error } = await client
       .from('interactions')
       .update({ completed_challenge: true })
       .eq('id', interactionId)
@@ -79,7 +104,8 @@ export async function markChallengeCompleted(interactionId: string): Promise<voi
 
 export async function markShared(interactionId: string, template: string): Promise<void> {
   try {
-    const { error } = await supabase
+    const client = await getClient()
+    const { error } = await client
       .from('interactions')
       .update({ shared: true, shared_template: template })
       .eq('id', interactionId)
