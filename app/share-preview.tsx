@@ -14,7 +14,7 @@ import {
   View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import ViewShot, { type ViewShotRef } from 'react-native-view-shot'
+import { captureRef } from 'react-native-view-shot'
 import { Colors } from '../constants/colors'
 import { getShareStyle } from '../services/storage'
 import { markShared } from '../services/supabase'
@@ -30,7 +30,7 @@ export default function SharePreviewScreen() {
   const currentInteractionId = useSessionStore((state) => state.currentInteractionId)
   const [selectedStyle, setSelectedStyle] = useState<ShareCardStyle>('Classic')
   const [isCapturing, setIsCapturing] = useState(false)
-  const viewShotRef = useRef<ViewShotRef>(null)
+  const cardRef = useRef<View>(null)
 
   // Default to the user's saved preference (Me screen → Default Share Style).
   useEffect(() => {
@@ -38,19 +38,20 @@ export default function SharePreviewScreen() {
   }, [])
 
   async function captureCard(): Promise<string> {
-    // The ViewShot ref attaches asynchronously (its forwardRef callback runs
-    // after the underlying View commits) — give it a moment rather than
-    // failing immediately if a tap lands before that's happened.
-    if (!viewShotRef.current) {
+    // The card is already visible on screen by the time the user can tap
+    // Share/Save, so the ref is reliably attached — but wait a moment
+    // anyway rather than failing immediately, matching the same defensive
+    // pattern used elsewhere in this flow.
+    if (!cardRef.current) {
       let attempts = 0
-      while (!viewShotRef.current && attempts < 20) {
+      while (!cardRef.current && attempts < 20) {
         await new Promise((resolve) => setTimeout(resolve, 100))
         attempts++
       }
     }
 
-    if (!viewShotRef.current) {
-      throw new Error('ViewShot ref not ready after waiting')
+    if (!cardRef.current) {
+      throw new Error('Card ref not ready after waiting')
     }
 
     try {
@@ -59,7 +60,11 @@ export default function SharePreviewScreen() {
       // own 5s watchdog, but this JS-side backstop keeps the UI from being
       // stuck on the loading spinner forever if anything still slips through.
       const uri = await Promise.race([
-        viewShotRef.current.capture(),
+        captureRef(cardRef, {
+          format: 'jpg',
+          quality: 0.95,
+          result: 'tmpfile',
+        }),
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error('Capture timed out after 10s')), 10000)
         ),
@@ -156,14 +161,7 @@ export default function SharePreviewScreen() {
             </View>
 
             <View style={styles.cardWrap}>
-              <ViewShot
-                ref={viewShotRef}
-                options={{
-                  format: 'jpg',
-                  quality: 0.95,
-                  result: 'tmpfile',
-                }}
-              >
+              <View ref={cardRef} collapsable={false}>
                 {selectedStyle === 'Classic' && (
                   <View style={styles.classicCard}>
                     <Image
@@ -231,7 +229,7 @@ export default function SharePreviewScreen() {
                     <Text style={styles.wisdomUrl}>whoops.app</Text>
                   </View>
                 )}
-              </ViewShot>
+              </View>
 
               {isCapturing ? (
                 <View style={styles.capturingOverlay}>
