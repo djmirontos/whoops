@@ -15,8 +15,6 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '../../constants/colors'
 import {
   clearHistoryAndStats,
-  clearOnboarded,
-  clearTodayUsage,
   getHapticsEnabled,
   getHistory,
   getShareStyle,
@@ -26,7 +24,6 @@ import {
   setShareStyle,
 } from '../../services/storage'
 import type { HistoryItem, ShareCardStyle } from '../../types'
-import { clearDeviceId } from '../../utils/deviceId'
 
 const CATEGORY_EMOJI: Record<string, string> = {
   procrastination: '😴',
@@ -135,25 +132,21 @@ export default function MeScreen() {
     Alert.alert('About Whoops', 'Whoops v1.0.0\nTerrible advice. Zero regrets.\n\n😈')
   }
 
-  async function handleClearRateLimit() {
-    await clearTodayUsage()
-    Alert.alert('Done', 'Cleared!')
+  function handleClearHistory() {
+    Alert.alert(
+      'Clear History?',
+      'This permanently deletes all your saved Whoops and resets your stats.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Clear', style: 'destructive', onPress: confirmClearHistory },
+      ]
+    )
   }
 
-  async function handleClearHistory() {
+  async function confirmClearHistory() {
     await clearHistoryAndStats()
     await loadData()
-    Alert.alert('Done', 'Cleared!')
-  }
-
-  async function handleClearDeviceId() {
-    await clearDeviceId()
-    Alert.alert('Done', 'Cleared!')
-  }
-
-  async function handleClearOnboarding() {
-    await clearOnboarded()
-    Alert.alert('Done', 'Cleared!')
+    Alert.alert('Done', 'History cleared.')
   }
 
   return (
@@ -240,10 +233,7 @@ export default function MeScreen() {
             <Ionicons name="chevron-forward" size={16} color={Colors.lavender} />
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.settingRow, styles.settingRowLast]}
-            onPress={handleAboutWhoops}
-          >
+          <TouchableOpacity style={styles.settingRow} onPress={handleAboutWhoops}>
             <View style={styles.settingLeft}>
               <Ionicons
                 name="information-circle-outline"
@@ -255,30 +245,22 @@ export default function MeScreen() {
             </View>
             <Ionicons name="chevron-forward" size={16} color={Colors.lavender} />
           </TouchableOpacity>
-        </View>
 
-        {__DEV__ && (
-          <>
-            <Text style={styles.sectionLabel}>Dev Tools</Text>
-            <View style={styles.settingsContainer}>
-              <TouchableOpacity style={styles.settingRow} onPress={handleClearRateLimit}>
-                <Text style={styles.settingLabel}>Clear Rate Limit</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.settingRow} onPress={handleClearHistory}>
-                <Text style={styles.settingLabel}>Clear History</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.settingRow} onPress={handleClearDeviceId}>
-                <Text style={styles.settingLabel}>Clear Device ID</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.settingRow, styles.settingRowLast]}
-                onPress={handleClearOnboarding}
-              >
-                <Text style={styles.settingLabel}>Clear Onboarding</Text>
-              </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.settingRow, styles.settingRowLast]}
+            onPress={handleClearHistory}
+          >
+            <View style={styles.settingLeft}>
+              <Ionicons
+                name="trash-outline"
+                size={20}
+                color={Colors.danger}
+                style={styles.settingIcon}
+              />
+              <Text style={[styles.settingLabel, styles.settingLabelDanger]}>Clear History</Text>
             </View>
-          </>
-        )}
+          </TouchableOpacity>
+        </View>
 
         <Text style={styles.footer}>😈 Whoops v1.0.0</Text>
       </ScrollView>
@@ -391,6 +373,9 @@ const styles = StyleSheet.create({
   settingLabel: {
     color: Colors.textPrimary,
     fontSize: 15,
+  },
+  settingLabelDanger: {
+    color: Colors.danger,
   },
   settingRight: {
     flexDirection: 'row',

@@ -29,7 +29,9 @@ export default function HistoryScreen() {
 
   function handleItemPress(item: HistoryItem) {
     loadFromHistory(item)
-    router.push('/advice')
+    // Already-completed items skip the "FINE. I'LL DO IT" advice flow they've
+    // already been through and go straight to the share card.
+    router.push(item.completedChallenge ? '/share-preview' : '/advice')
   }
 
   return (

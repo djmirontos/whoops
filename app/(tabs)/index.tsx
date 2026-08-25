@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import { useEffect, useRef, useState } from 'react'
 import {
-  Alert,
   Animated,
   Image,
   Keyboard,
@@ -19,7 +18,6 @@ import { Colors } from '../../constants/colors'
 import { LOADING_MESSAGES } from '../../constants/loadingMessages'
 import { useAdvice } from '../../hooks/useAdvice'
 import { useHaptics } from '../../hooks/useHaptics'
-import { clearTodayUsage } from '../../services/storage'
 import { useSessionStore } from '../../stores/sessionStore'
 
 const CHAR_LIMIT = 500
@@ -131,17 +129,6 @@ export default function HomeScreen() {
           </Pressable>
 
           <Text style={styles.sparkles}>✦ ✧ ✦</Text>
-
-          {__DEV__ && (
-            <TouchableOpacity
-              onPress={async () => {
-                await clearTodayUsage()
-                Alert.alert('Done', 'Rate limit cleared!')
-              }}
-            >
-              <Text style={styles.devResetText}>[DEV: Clear rate limit]</Text>
-            </TouchableOpacity>
-          )}
 
           {errorMessage ? (
             <View style={styles.errorToast}>
@@ -296,13 +283,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 14,
     marginTop: 16,
-  },
-  // Intentionally a raw literal, not a Colors token — temporary dev-only debug affordance.
-  devResetText: {
-    color: '#666',
-    fontSize: 11,
-    textAlign: 'center',
-    marginTop: 8,
   },
   errorToast: {
     backgroundColor: Colors.danger,
