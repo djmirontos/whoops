@@ -38,8 +38,19 @@ export default function SharePreviewScreen() {
   }, [])
 
   async function captureCard(): Promise<string> {
+    // The ViewShot ref attaches asynchronously (its forwardRef callback runs
+    // after the underlying View commits) — give it a moment rather than
+    // failing immediately if a tap lands before that's happened.
     if (!viewShotRef.current) {
-      throw new Error('ViewShot ref not ready')
+      let attempts = 0
+      while (!viewShotRef.current && attempts < 20) {
+        await new Promise((resolve) => setTimeout(resolve, 100))
+        attempts++
+      }
+    }
+
+    if (!viewShotRef.current) {
+      throw new Error('ViewShot ref not ready after waiting')
     }
 
     try {
