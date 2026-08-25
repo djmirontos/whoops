@@ -14,7 +14,7 @@ import {
   View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import ViewShot from 'react-native-view-shot'
+import ViewShot, { type ViewShotRef } from 'react-native-view-shot'
 import { Colors } from '../constants/colors'
 import { getShareStyle } from '../services/storage'
 import { markShared } from '../services/supabase'
@@ -30,7 +30,7 @@ export default function SharePreviewScreen() {
   const currentInteractionId = useSessionStore((state) => state.currentInteractionId)
   const [selectedStyle, setSelectedStyle] = useState<ShareCardStyle>('Classic')
   const [isCapturing, setIsCapturing] = useState(false)
-  const viewShotRef = useRef<ViewShot>(null)
+  const viewShotRef = useRef<ViewShotRef>(null)
 
   // Default to the user's saved preference (Me screen → Default Share Style).
   useEffect(() => {
@@ -44,19 +44,15 @@ export default function SharePreviewScreen() {
 
     try {
       console.log('[Share] Starting capture...')
-      // capture() is typed as optional on ViewShot's ref, so guard the call.
-      // Also race it against a timeout — on some Android devices the native
-      // capture call can hang indefinitely instead of rejecting, which would
-      // otherwise leave the UI stuck on the loading spinner forever.
+      // Race against a timeout — v5 hardens the native capture path with its
+      // own 5s watchdog, but this JS-side backstop keeps the UI from being
+      // stuck on the loading spinner forever if anything still slips through.
       const uri = await Promise.race([
-        viewShotRef.current.capture?.(),
+        viewShotRef.current.capture(),
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error('Capture timed out after 10s')), 10000)
         ),
       ])
-      if (!uri) {
-        throw new Error('Capture returned no URI')
-      }
       console.log('[Share] Captured URI:', uri)
       return uri
     } catch (err) {
