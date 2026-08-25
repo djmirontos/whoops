@@ -37,6 +37,10 @@ export default function SharePreviewScreen() {
     getShareStyle().then(setSelectedStyle)
   }, [])
 
+  useEffect(() => {
+    console.log('[Share] screen mounted, cardRef.current:', !!cardRef.current)
+  }, [])
+
   async function captureCard(): Promise<string> {
     // The card is already visible on screen by the time the user can tap
     // Share/Save, so the ref is reliably attached — but wait a moment
@@ -161,7 +165,16 @@ export default function SharePreviewScreen() {
             </View>
 
             <View style={styles.cardWrap}>
-              <View ref={cardRef} collapsable={false}>
+              <View
+                ref={(node) => {
+                  console.log('[Share] card ref callback fired, node:', !!node)
+                  cardRef.current = node
+                }}
+                collapsable={false}
+                onLayout={(e) => {
+                  console.log('[Share] card onLayout fired:', JSON.stringify(e.nativeEvent.layout))
+                }}
+              >
                 {selectedStyle === 'Classic' && (
                   <View style={styles.classicCard}>
                     <Image
