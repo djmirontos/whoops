@@ -171,6 +171,7 @@ export default function SharePreviewScreen() {
                   cardRef.current = node
                 }}
                 collapsable={false}
+                cssInterop={false}
                 onLayout={(e) => {
                   console.log('[Share] card onLayout fired:', JSON.stringify(e.nativeEvent.layout))
                 }}
